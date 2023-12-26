@@ -6,13 +6,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('Cr8xcel APIs')
+    .setTitle('MyDocTracker APIs')
     .setDescription(
-      'These are all the APIs used for the development of Cr8xcel',
+      'These are all the APIs used for the development of MyDocTracker',
     )
     .setVersion('1.0')
     .build();
-
+    
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
   await app.listen(process.env.PORT);
