@@ -2,15 +2,13 @@ name: Deployment on Live Server
 
 on:
   push:
-    branches: ['develop']
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
 jobs:
-  build-deploy:
-    runs-on: development
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-
+  build:
+    runs-on: [self-hosted, development]
     env:
       PORT: 3001
       MYSQL_HOST: localhost
@@ -18,14 +16,11 @@ jobs:
       MYSQL_PASSWORD: jL#4p@*9vT$!7
       MYSQL_DATABASE: mydoctracker_dev
       MYSQL_PORT: 3306
-
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm i
-      - run: npm run deploy:prod
-      - run: pm2 save
+          node-version: 16.x
+      - run: npm install
+      - run: pm2 restart backend
