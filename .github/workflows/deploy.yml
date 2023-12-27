@@ -1,16 +1,24 @@
-name: Deployment on Dev Environment
+name: Deployment on Live Server
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
 jobs:
   build-deploy:
-    runs-on: development
+    runs-on: user-prod-server
  
     strategy:
       matrix:
         node-version: [18.x]
-        
+
+    env:
+      PORT: 3001
+      MYSQL_HOST: localhost
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: jL#4p@*9vT$!7
+      MYSQL_DATABASE: mydoctracker-dev
+      MYSQL_PORT: 3306
+  
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
@@ -18,4 +26,5 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: echo "Hello World";
+    - run: npm i
+    - run: npm run start
