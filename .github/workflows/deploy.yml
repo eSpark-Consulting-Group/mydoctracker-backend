@@ -1,17 +1,16 @@
-name: Deployment on Live Server
+name: Deploy to Development
 
 on:
   push:
-    branches: [ "develop" ]
+    branches:
+      - main
+
 jobs:
-  build-deploy:
+  deploy:
     runs-on: development
- 
-    strategy:
-      matrix:
-        node-version: [18.x]
 
     env:
+      DEPLOY_PATH: '/home/ubuntu/doc-tracker-backend-dev'
       PORT: 3001
       MYSQL_HOST: localhost
       MYSQL_USER: dev
@@ -20,12 +19,21 @@ jobs:
       MYSQL_PORT: 3306
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm i -f
-    - run: npm run deploy:prod
-    - run: pm2 save -f
+        node-version: '14'
+
+    - name: Install dependencies
+      run: |
+        npm install
+
+    - name: Build application
+      run: |
+        npm run build
+
+    - name: Restart NestJS application
+      run: pm2 restart $DEPLOY_PATH/dist/src/main.js
