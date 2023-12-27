@@ -5,7 +5,7 @@ on:
     branches: [ "develop" ]
 jobs:
   build-deploy:
-    runs-on: user-prod-server
+    runs-on: ubuntu-latest
  
     strategy:
       matrix:
