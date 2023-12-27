@@ -5,7 +5,7 @@ on:
     branches: [ "develop" ]
 jobs:
   build-deploy:
-    runs-on: ubuntu-latest
+    runs-on: dev-runner
  
     strategy:
       matrix:
@@ -27,6 +27,5 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm i -f
-    - run: npm install pm2 -g
     - run: npm run deploy:prod
     - run: pm2 save -f
