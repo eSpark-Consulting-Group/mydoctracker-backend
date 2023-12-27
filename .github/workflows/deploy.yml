@@ -1,8 +1,8 @@
-name: Deployment on Live Server
+name: Deployment on Dev Environment
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 jobs:
   build-deploy:
     runs-on: development
