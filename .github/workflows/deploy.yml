@@ -28,4 +28,5 @@ jobs:
         cache: 'npm'
     - run: npm i -f
     - run: npm run deploy:prod
+    - run: npm install pm2 -g 
     - run: pm2 save -f
