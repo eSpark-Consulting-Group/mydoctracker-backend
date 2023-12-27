@@ -14,8 +14,8 @@ jobs:
     env:
       PORT: 3001
       MYSQL_HOST: localhost
-      MYSQL_USER: root
-      MYSQL_PASSWORD: NoumanFattaeSpark
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: jL#4p@*9vT$!7
       MYSQL_DATABASE: mydoctracker_dev
       MYSQL_PORT: 3306
 
