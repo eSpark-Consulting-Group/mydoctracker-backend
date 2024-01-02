@@ -3,13 +3,13 @@ import { Admin } from './Admin.entity';
 
 @Entity()
 export class DeviceInventory {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   email: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, length: 17 })
   macAddress: string;
 
   @ManyToOne(() => Admin, (admin) => admin.id)

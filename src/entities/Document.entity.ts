@@ -15,8 +15,8 @@ export enum DocumentType {
 
 @Entity()
 export class Document {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @OneToOne(() => DeviceInventory, (device) => device.id)
   trackerId: DeviceInventory;

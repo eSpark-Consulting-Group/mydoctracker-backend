@@ -3,8 +3,8 @@ import { Document, DocumentType, Meta } from './Document.entity';
 
 @Entity()
 export class DocumentHistory {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ type: 'enum', enum: DocumentType })
   type: DocumentType;

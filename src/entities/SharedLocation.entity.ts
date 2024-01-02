@@ -3,8 +3,8 @@ import { Document } from './Document.entity';
 
 @Entity()
 export class SharedLocation {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => Document, (document) => document.id)
   documentId: Document;

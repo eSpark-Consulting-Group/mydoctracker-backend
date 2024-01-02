@@ -15,8 +15,8 @@ export enum Status {
 @Entity()
 @Index('IDX_user_email', ['email'])
 export class Users {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   firstName: string;
@@ -24,15 +24,27 @@ export class Users {
   @Column()
   lastName: string;
 
-  @Column({ unique: true })
+  @Column()
+  profilePicture: string;
+
+  @Column({ length: 50 })
+  username: string;
+
+  @Column({ unique: true, length: 100 })
   email: string;
 
   @Column()
-  password: string;
+  employeePassword: string;
 
   @Column()
+  hashedPassword: string;
+
+  @Column({ length: 20 })
   contact: string;
 
-  @Column({ type: 'enum', enum: UserRoles, nullable: false })
+  @Column({ type: 'enum', enum: UserRoles, default: 'SU' })
   role: UserRoles;
+
+  @Column({ type: 'enum', enum: Status, default: 'ACTIVE' })
+  status: Status;
 }

@@ -15,8 +15,8 @@ export enum NotificationTypes {
 }
 @Entity()
 export class Notification {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   message: string;
@@ -27,7 +27,7 @@ export class Notification {
   @Column()
   read: boolean;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ precision: 6, default: () => 'CURRENT_TIMESTAMP(6)' })
   sentAt: Date;
 
   @ManyToOne(() => Users, (user) => user.id)
