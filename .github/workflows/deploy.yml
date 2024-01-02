@@ -5,7 +5,7 @@ on:
     branches: [ "develop" ]
 jobs:
   build-deploy:
-    runs-on: development
+    runs-on: develop
  
     strategy:
       matrix:
