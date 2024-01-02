@@ -1,10 +1,38 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+
+export enum UserRoles {
+  SU = 'SU',
+  CU = 'CU',
+  BCU = 'BCU',
+  ACU = 'ACU',
+  RCU = 'RCU',
+}
+export enum Status {
+  ACTIVE = 'ACTIVE',
+  DEACTIVE = 'DEACTIVE',
+}
 
 @Entity()
-export class User {
+@Index('IDX_user_email', ['email'])
+export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  name: string;
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  password: string;
+
+  @Column()
+  contact: string;
+
+  @Column({ type: 'enum', enum: UserRoles, nullable: false })
+  role: UserRoles;
 }
