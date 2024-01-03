@@ -1,10 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from './utils/ValidationPipe/validation.pipe';
+import { UnknownExceptionFilter } from './utils/filters/UnknownExceptionFilter.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.useGlobalFilters(new UnknownExceptionFilter());
+  app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
     .setTitle('MyDocTracker APIs')
     .setDescription(
@@ -12,7 +15,7 @@ async function bootstrap() {
     )
     .setVersion('1.0')
     .build();
-    
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
   await app.listen(process.env.PORT);

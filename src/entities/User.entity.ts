@@ -24,16 +24,16 @@ export class Users {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   profilePicture: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, unique: true })
   username: string;
 
   @Column({ unique: true, length: 100 })
   email: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   employeePassword: string;
 
   @Column()
