@@ -1,13 +1,28 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
 } from '@nestjs/swagger';
-import { SigninDTO, SignupDTO } from './dto/users-dto';
-import { ErrorResponseBody } from 'src/utils/APIResponse';
-import { SingupResponseDto } from './dto/response-dto';
+import { ChangePasswordDTO, SigninDTO, SignupDTO } from './dto/users-dto';
+import { APIResponseType, ErrorResponseBody } from 'src/utils/APIResponse';
+import {
+  ChangePasswordResponseDto,
+  SigninResponseDto,
+  SingupResponseDto,
+} from './dto/response-dto';
+import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -31,12 +46,12 @@ export class UsersController {
       data,
     };
   }
-  @ApiOperation({ summary: 'Singin' })
+  @ApiOperation({ summary: 'Signin' })
   @Post('/signin')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
-    type: SingupResponseDto,
+    type: SigninResponseDto,
   })
   @ApiInternalServerErrorResponse({
     description: 'Internal server error',
@@ -46,8 +61,33 @@ export class UsersController {
     const token = await this.userService.signin(reqData);
     return {
       status: 'success',
-      message: 'Your account has been created successfully!',
-      data: token,
+      message: 'You have successfully logged in',
+      data: { token },
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change Password By Username' })
+  @UseGuards(JwtGuard)
+  @Put('/:username/password')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: ChangePasswordResponseDto,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  @ApiParam({ name: 'username', example: 'fName-lName' })
+  async getUserPlan(
+    @Param('username') username: string,
+    @Body() requestData: ChangePasswordDTO,
+  ): Promise<APIResponseType> {
+    await this.userService.changePassword({ ...requestData, username });
+    return {
+      status: 'success',
+      message: 'Your password has been changed successfully!',
     };
   }
 }

@@ -109,3 +109,32 @@ export class SigninDTO {
   @IsBoolean()
   readonly rememberMe: boolean;
 }
+export class ChangePasswordDTO {
+  @ApiProperty({
+    type: String,
+    example: 'Admin@test123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
+  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
+    message:
+      'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
+  })
+  readonly oldPassword: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'Admin@test123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
+  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
+    message:
+      'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
+  })
+  readonly newPassword: string;
+}

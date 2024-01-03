@@ -16,3 +16,32 @@ export class SingupResponseDto {
   })
   data: Users;
 }
+class TokenDto {
+  @ApiProperty()
+  token: string;
+}
+export class SigninResponseDto {
+  @ApiProperty({ description: 'Status of the response', example: 'success' })
+  status: string;
+
+  @ApiProperty({
+    description: 'Response message',
+    example: 'You have successfully logged in!',
+  })
+  message: string;
+
+  @ApiProperty({
+    description: 'Response data',
+  })
+  data: TokenDto;
+}
+export class ChangePasswordResponseDto {
+  @ApiProperty({ description: 'Status of the response', example: 'success' })
+  status: string;
+
+  @ApiProperty({
+    description: 'Response message',
+    example: 'You have successfully logged in!',
+  })
+  message: string;
+}

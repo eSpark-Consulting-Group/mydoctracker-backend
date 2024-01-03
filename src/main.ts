@@ -10,6 +10,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
     .setTitle('MyDocTracker APIs')
+    .addBearerAuth()
+    .addApiKey({ type: 'apiKey', name: 'key', in: 'header' }, 'key')
     .setDescription(
       'These are all the APIs used for the development of MyDocTracker',
     )

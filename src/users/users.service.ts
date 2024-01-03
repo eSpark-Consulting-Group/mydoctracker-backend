@@ -3,11 +3,12 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Status, UserRoles, Users } from 'src/entities/User.entity';
+import { UserStatus, UserRoles, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { SigninDTO, SignupDTO } from './dto/users-dto';
@@ -25,8 +26,15 @@ export class UsersService {
     return hashedPassowrd;
   }
 
-  getUserDetails(id: string) {
-    return this.userRepositry.findOneOrFail({ where: { id } });
+  getActiveUserById(id: string) {
+    return this.userRepositry.findOne({
+      where: { id, status: UserStatus.ACTIVE },
+    });
+  }
+  getActiveUserByUsername(username: string) {
+    return this.userRepositry.findOne({
+      where: { username, status: UserStatus.ACTIVE },
+    });
   }
 
   async signupSingleUser(newUser: SignupDTO) {
@@ -39,7 +47,6 @@ export class UsersService {
         email: newUser.email,
         hashedPassword: this.hashPassword(newUser.password),
         role: UserRoles.SU,
-        status: Status.ACTIVE,
       });
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };
@@ -74,14 +81,9 @@ export class UsersService {
   }
 
   async signin(user: SigninDTO) {
-    const foundUser = await this.userRepositry.findOne({
-      where: { username: user.username },
-    });
+    const foundUser = await this.getActiveUserByUsername(user.username);
     if (!foundUser) {
       throw new UnauthorizedException(`Username or password invalid`);
-    }
-    if (foundUser.status !== Status.ACTIVE) {
-      throw new UnauthorizedException(`User's account is not activated`);
     }
     const isPassCorrect = await bcrypt.compare(
       user.password,
@@ -100,5 +102,29 @@ export class UsersService {
       });
     }
     return token;
+  }
+
+  async changePassword({
+    username,
+    newPassword,
+    oldPassword,
+  }: {
+    username: string;
+    oldPassword: string;
+    newPassword: string;
+  }) {
+    const foundUser = await this.getActiveUserByUsername(username);
+    if (!foundUser) {
+      throw new NotFoundException('User not found!');
+    }
+    const isPassCorrect = await bcrypt.compare(
+      oldPassword,
+      foundUser.hashedPassword,
+    );
+    if (!isPassCorrect) {
+      throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
+    }
+    foundUser.hashedPassword = this.hashPassword(newPassword);
+    await this.userRepositry.save(foundUser);
   }
 }
