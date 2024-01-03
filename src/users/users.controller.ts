@@ -14,6 +14,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiTags,
 } from '@nestjs/swagger';
 import { ChangePasswordDTO, SigninDTO, SignupDTO } from './dto/users-dto';
 import { APIResponseType, ErrorResponseBody } from 'src/utils/APIResponse';
@@ -25,6 +26,7 @@ import {
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 
 @Controller('users')
+@ApiTags('Users')
 export class UsersController {
   constructor(private userService: UsersService) {}
   @ApiOperation({ summary: 'Signup' })

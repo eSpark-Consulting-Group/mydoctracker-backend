@@ -39,7 +39,7 @@ export class Users {
   @Column()
   hashedPassword: string;
 
-  @Column({ length: 20 })
+  @Column({ length: 20, unique: true })
   contact: string;
 
   @Column({ type: 'enum', enum: UserRoles, default: 'SU' })

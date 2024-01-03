@@ -25,18 +25,11 @@ export class UsersService {
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
     return hashedPassowrd;
   }
-
-  getActiveUserById(id: string) {
+  getUserById(id: string) {
     return this.userRepositry.findOne({
-      where: { id, status: UserStatus.ACTIVE },
+      where: { id },
     });
   }
-  getActiveUserByUsername(username: string) {
-    return this.userRepositry.findOne({
-      where: { username, status: UserStatus.ACTIVE },
-    });
-  }
-
   async signupSingleUser(newUser: SignupDTO) {
     try {
       const createdUser = this.userRepositry.create({
@@ -69,6 +62,8 @@ export class UsersService {
           throw new ConflictException('Username already exists.');
         } else if (keyName === 'users.IDX_97672ac88f789774dd47f7c8be') {
           throw new ConflictException('Email already exists.');
+        } else if (keyName === 'users.IDX_6c71f479b6fd0e0f7e1b8d855e') {
+          throw new ConflictException('Contact number already exists.');
         } else {
           throw new ConflictException(
             'Duplicate entry for a unique constraint.',
@@ -81,9 +76,14 @@ export class UsersService {
   }
 
   async signin(user: SigninDTO) {
-    const foundUser = await this.getActiveUserByUsername(user.username);
+    const foundUser = await this.userRepositry.findOne({
+      where: { username: user.username },
+    });
     if (!foundUser) {
       throw new UnauthorizedException(`Username or password invalid`);
+    }
+    if (foundUser.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(`Your account has been deactivated!`);
     }
     const isPassCorrect = await bcrypt.compare(
       user.password,
@@ -113,9 +113,12 @@ export class UsersService {
     oldPassword: string;
     newPassword: string;
   }) {
-    const foundUser = await this.getActiveUserByUsername(username);
+    const foundUser = await this.userRepositry.findOne({ where: { username } });
     if (!foundUser) {
       throw new NotFoundException('User not found!');
+    }
+    if (foundUser.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(`Your account has been deactivated!`);
     }
     const isPassCorrect = await bcrypt.compare(
       oldPassword,

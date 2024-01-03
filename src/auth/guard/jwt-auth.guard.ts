@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { UserStatus } from 'src/entities/User.entity';
 import { UsersService } from 'src/users/users.service';
 import { APIException } from 'src/utils/APIResponse';
 
@@ -33,12 +34,21 @@ export class JwtGuard implements CanActivate {
       secret: process.env.JWT_SECRET,
     });
     // Attach the payload to the request's user property
-    request.user = await this.userSerive.getActiveUserById(payload.id);
+    request.user = await this.userSerive.getUserById(payload.id);
     if (!request.user)
       throw new APIException(
         {
           status: 'error',
           message: 'Invalid sign in! Please use a valid token to continue.',
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+
+    if (request.user.status !== UserStatus.ACTIVE)
+      throw new APIException(
+        {
+          status: 'error',
+          message: 'Your account has been deactivated! ',
         },
         HttpStatus.UNAUTHORIZED,
       );
