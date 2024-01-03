@@ -138,3 +138,5 @@ export class ChangePasswordDTO {
   })
   readonly newPassword: string;
 }
+
+export class UpdateProfileDTO {}
