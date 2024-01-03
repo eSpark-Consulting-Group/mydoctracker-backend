@@ -34,7 +34,7 @@ import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 @ApiTags('Users')
 export class UsersController {
   constructor(private userService: UsersService) {}
-  @ApiOperation({ summary: 'Signup' })
+  @ApiOperation({ summary: 'Signup a single user' , description:'Creates a new user account using the provided signup data. Upon successful signup, returns account creation status and user details.' })
   @Post('/signup')
   @HttpCode(200)
   @ApiOkResponse({
@@ -53,7 +53,7 @@ export class UsersController {
       data,
     };
   }
-  @ApiOperation({ summary: 'Signin' })
+  @ApiOperation({ summary: 'Signin' , description: 'Validates user credentials and generates an authentication token upon successful login. Returns authentication status and a generated token on successful login.'})
   @Post('/signin')
   @HttpCode(200)
   @ApiOkResponse({
