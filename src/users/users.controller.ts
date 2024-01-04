@@ -53,7 +53,7 @@ export class UsersController {
       data,
     };
   }
-  @ApiOperation({ summary: 'Signin', description: 'Initiates the login process by verifying user-provided credentials against stored data. \nUpon successful authentication, generates a JWT token to authorize subsequent requests. \nThe "SigninDTO" contains user login details like email/username and password for validation. If authentication succeeds, the response includes a "token" granting access to protected routes. Utilizes the "UserService.signin" method to validate credentials and produce the token. Successful login triggers a response with status "success" and a confirmation message. In case of failed login attempts, appropriate error responses or status codes are provided.' })
+  @ApiOperation({ summary: 'Signin', description: 'Initiates the login process by verifying user-provided credentials against stored data. Upon successful authentication, generates a JWT token to authorize subsequent requests. The "SigninDTO" contains user login details like email/username and password for validation. If authentication succeeds, the response includes a "token" granting access to protected routes. Utilizes the "UserService.signin" method to validate credentials and produce the token. Successful login triggers a response with status "success" and a confirmation message. In case of failed login attempts, appropriate error responses or status codes are provided.' })
   @Post('/signin')
   @HttpCode(200)
   @ApiOkResponse({
