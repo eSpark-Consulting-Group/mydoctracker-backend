@@ -106,43 +106,35 @@ export class UsersService {
     return token;
   }
 
-  async changePassword({
-    username,
-    newPassword,
-    oldPassword,
-  }: {
-    username: string;
-    oldPassword: string;
-    newPassword: string;
-  }) {
-    const foundUser = await this.userRepositry.findOne({ where: { username } });
-    if (!foundUser) {
-      throw new NotFoundException('User not found!');
-    }
-    if (foundUser.status !== UserStatus.ACTIVE) {
-      throw new UnauthorizedException(`This account has been deactivated!`);
+  async changePassword({ newPassword, oldPassword }, currentUser: Users) {
+    const user = await this.userRepositry.findOne({
+      where: { id: currentUser.id, status: UserStatus.ACTIVE },
+    });
+    if (!user) {
+      throw new NotFoundException('User not Found!');
     }
     const isPassCorrect = await bcrypt.compare(
       oldPassword,
-      foundUser.hashedPassword,
+      user.hashedPassword,
     );
     if (!isPassCorrect) {
       throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
     }
-    foundUser.hashedPassword = this.hashPassword(newPassword);
-    await this.userRepositry.save(foundUser);
+    user.hashedPassword = this.hashPassword(newPassword);
+    await this.userRepositry.save(user);
   }
 
-  async updateProfile(userData: UpdateProfileDTO, file, username: string) {
+  async updateProfile(
+    userData: UpdateProfileDTO,
+    file: any,
+    currentUser: Users,
+  ) {
     try {
       const user = await this.userRepositry.findOne({
-        where: { username },
+        where: { id: currentUser.id, status: UserStatus.ACTIVE },
       });
       if (!user) {
-        throw new NotFoundException('User not found with this username');
-      }
-      if (user.status !== UserStatus.ACTIVE) {
-        throw new UnauthorizedException(`This account has been deactivated!`);
+        throw new NotFoundException('User not Found!');
       }
       if (file && file.length) {
         const response = await this.fileUploadService.uploadFileInS3(

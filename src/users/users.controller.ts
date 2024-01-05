@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   HttpCode,
-  Param,
   Post,
   Put,
   UploadedFiles,
@@ -16,7 +15,6 @@ import {
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -39,6 +37,8 @@ import {
 } from './dto/response-dto';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { imageFileInterceptor } from 'src/utils/helpers/interceptors/file.upload';
+import { CurrentUser } from 'src/utils/decorators/current-user';
+import { Users } from 'src/entities/User.entity';
 
 @Controller('users')
 @ApiTags('Users')
@@ -113,12 +113,11 @@ export class UsersController {
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  @ApiParam({ name: 'username', example: 'fName-lName' })
   async changePassword(
-    @Param('username') username: string,
     @Body() requestData: ChangePasswordDTO,
+    @CurrentUser() user: Users,
   ): Promise<APIResponseType> {
-    await this.userService.changePassword({ ...requestData, username });
+    await this.userService.changePassword({ ...requestData }, user);
     return {
       status: 'success',
       message: 'Your password has been changed successfully!',
@@ -137,22 +136,17 @@ export class UsersController {
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  @ApiParam({ name: 'username', example: 'fName-lName' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(imageFileInterceptor)
   async updateProfile(
-    @Param('username') username: string,
     @UploadedFiles()
     file: {
-      profilePicture;
+      profilePicture: any;
     },
     @Body() reqData: UpdateProfileDTO,
+    @CurrentUser() user: Users,
   ): Promise<APIResponseType> {
-    await this.userService.updateProfile(
-      reqData,
-      file.profilePicture,
-      username,
-    );
+    await this.userService.updateProfile(reqData, file.profilePicture, user);
     return {
       status: 'success',
       message: 'Your profile has been updated successfully!',
