@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { B2 } from 'backblaze-b2';
+import { Users } from 'src/entities/User.entity';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const B2 = require('backblaze-b2');
 
 @Injectable()
 export class CloudStorageService {
-  private b2: B2;
+  private b2: any;
 
   constructor() {
     this.b2 = new B2({
@@ -12,24 +14,25 @@ export class CloudStorageService {
     });
   }
 
-  async uploadFile(file): Promise<string> {
-    const bucketName = 'your-bucket-name';
-    const fileBuffer = file.buffer;
-    const fileName = file.originalname;
-
-    try {
-      await this.b2.authorize();
-      const response = await this.b2.uploadFile({
-        bucket: bucketName,
-        fileName,
-        data: fileBuffer,
-      });
-
-      return response.data.fileId;
-    } catch (error) {
-      console.error('Error uploading file to Backblaze:', error);
-      throw new Error('Failed to upload file');
+  async uploadFileInS3(
+    file,
+    user: Users,
+    folderName: string,
+  ): Promise<{ fileId: string; fileName: string }> {
+    await this.b2.authorize(); // must authorize first (authorization lasts 24 hrs)
+    const data = await this.b2.getUploadUrl({
+      bucketId: process.env.BUCKET_ID,
+    });
+    const response = await this.b2.uploadFile({
+      uploadUrl: data.data.uploadUrl,
+      uploadAuthToken: data.data.authorizationToken,
+      fileName: `${folderName}/${user.id}`,
+      data: file.buffer,
+    });
+    if (response) {
+      return { fileId: response.data.fileId, fileName: response.data.fileName };
     }
+    return undefined;
   }
 
   async deleteFile(fileId: string): Promise<void> {

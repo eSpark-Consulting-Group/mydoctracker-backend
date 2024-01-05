@@ -11,7 +11,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserStatus, UserRoles, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { SigninDTO, SignupDTO } from './dto/users-dto';
+import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
+import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +20,7 @@ export class UsersService {
     @InjectRepository(Users)
     private userRepositry: Repository<Users>,
     private jwtService: JwtService,
+    private fileUploadService: CloudStorageService,
   ) {}
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
@@ -118,7 +120,7 @@ export class UsersService {
       throw new NotFoundException('User not found!');
     }
     if (foundUser.status !== UserStatus.ACTIVE) {
-      throw new UnauthorizedException(`Your account has been deactivated!`);
+      throw new UnauthorizedException(`This account has been deactivated!`);
     }
     const isPassCorrect = await bcrypt.compare(
       oldPassword,
@@ -129,5 +131,51 @@ export class UsersService {
     }
     foundUser.hashedPassword = this.hashPassword(newPassword);
     await this.userRepositry.save(foundUser);
+  }
+
+  async updateProfile(userData: UpdateProfileDTO, file, username: string) {
+    try {
+      const user = await this.userRepositry.findOne({
+        where: { username },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found with this username');
+      }
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new UnauthorizedException(`This account has been deactivated!`);
+      }
+      if (file && file.length) {
+        const response = await this.fileUploadService.uploadFileInS3(
+          file[0],
+          user,
+          process.env.PROFILES_FOLDER_NAME,
+        );
+        user.fileId = response.fileId;
+        user.profilePicture = `${process.env.S3_URL}${response.fileName}`;
+      }
+      user.firstName = userData.firstName || user.firstName;
+      user.lastName = userData.lastName || user.lastName;
+      user.email = userData.email || user.email;
+      user.contact = userData.contact || user.contact;
+      await this.userRepositry.save(user);
+    } catch (error) {
+      if (error.errno === 1062) {
+        const match = error?.sqlMessage?.match(/for key '(.*?)'/);
+        const keyName = match ? match[1] : 'unknown';
+        if (keyName === 'users.IDX_fe0bb3f6520ee0469504521e71') {
+          throw new ConflictException('Username already exists.');
+        } else if (keyName === 'users.IDX_97672ac88f789774dd47f7c8be') {
+          throw new ConflictException('Email already exists.');
+        } else if (keyName === 'users.IDX_6c71f479b6fd0e0f7e1b8d855e') {
+          throw new ConflictException('Contact number already exists.');
+        } else {
+          throw new ConflictException(
+            'Duplicate entry for a unique constraint.',
+          );
+        }
+      } else {
+        throw error;
+      }
+    }
   }
 }

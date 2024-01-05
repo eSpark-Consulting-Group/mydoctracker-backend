@@ -41,7 +41,17 @@ export class ChangePasswordResponseDto {
 
   @ApiProperty({
     description: 'Response message',
-    example: 'You have successfully logged in!',
+    example: 'Your password has been changed successfully!',
+  })
+  message: string;
+}
+export class UpdateProfileResponseDto {
+  @ApiProperty({ description: 'Status of the response', example: 'success' })
+  status: string;
+
+  @ApiProperty({
+    description: 'Response message',
+    example: 'Your profile has been updated successfully!',
   })
   message: string;
 }

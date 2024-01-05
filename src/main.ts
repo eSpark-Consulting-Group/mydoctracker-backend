@@ -7,7 +7,7 @@ import { UnknownExceptionFilter } from './utils/filters/UnknownExceptionFilter.f
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new UnknownExceptionFilter());
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe()); // app.use(fileUpload());
   const config = new DocumentBuilder()
     .setTitle('MyDocTracker APIs')
     .addBearerAuth()

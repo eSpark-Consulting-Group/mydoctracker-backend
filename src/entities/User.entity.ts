@@ -42,6 +42,9 @@ export class Users {
   @Column({ length: 20, unique: true })
   contact: string;
 
+  @Column({ nullable: true, default: null })
+  fileId: string;
+
   @Column({ type: 'enum', enum: UserRoles, default: 'SU' })
   role: UserRoles;
 

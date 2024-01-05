@@ -4,6 +4,7 @@ import {
   IsDefined,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -139,4 +140,35 @@ export class ChangePasswordDTO {
   readonly newPassword: string;
 }
 
-export class UpdateProfileDTO {}
+export class UpdateProfileDTO {
+  @ApiProperty({ type: String, required: false })
+  @IsString({ message: 'First name must be a string' })
+  @IsOptional()
+  readonly firstName: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsString({ message: 'Last name must be a string' })
+  @IsOptional()
+  readonly lastName: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsEmail()
+  @IsOptional()
+  readonly email: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsDefined()
+  @Matches(/^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/, {
+    message:
+      'Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890',
+  })
+  @IsOptional()
+  readonly contact: string;
+  @ApiProperty({
+    required: false,
+    type: 'string',
+    format: 'binary',
+  })
+  @IsOptional()
+  readonly profilePicture: File;
+}
