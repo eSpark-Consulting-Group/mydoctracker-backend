@@ -116,14 +116,15 @@ export class ChangePasswordDTO {
     example: 'Admin@test123',
   })
   @IsString()
-  @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
+  @IsOptional()
+  @IsNotEmpty({ message: 'Old password should not be empty' })
+  @MinLength(8, { message: 'Old Password must be at least 8 characters long' })
+  @MaxLength(20, { message: 'Old Password must not exceed 20 characters' })
   @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
     message:
-      'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
+      'Old Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
   })
-  readonly oldPassword: string;
+  readonly oldPassword?: string;
 
   @ApiProperty({
     type: String,
@@ -131,8 +132,8 @@ export class ChangePasswordDTO {
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
+  @MinLength(8, { message: 'New Password must be at least 8 characters long' })
+  @MaxLength(20, { message: 'New Password must not exceed 20 characters' })
   @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
     message:
       'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',

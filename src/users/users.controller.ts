@@ -1,11 +1,12 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   Ip,
   Post,
   Put,
+  Query,
+  Req,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -17,6 +18,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -49,7 +51,7 @@ import { request } from 'http';
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
-  constructor(private userService: UsersService) { }
+  constructor(private userService: UsersService) {}
   @ApiOperation({
     summary: 'Signup a single user',
     description:
@@ -109,7 +111,8 @@ export class UsersController {
     status: 404,
   })
   @UseGuards(JwtGuard)
-  @Put('/:username/password')
+  @ApiQuery({ name: 'token', required: false })
+  @Put('/change-password')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
@@ -122,8 +125,9 @@ export class UsersController {
   async changePassword(
     @Body() requestData: ChangePasswordDTO,
     @CurrentUser() user: Users,
+    @Query('token') token: string,
   ): Promise<APIResponseType> {
-    await this.userService.changePassword({ ...requestData }, user);
+    await this.userService.changePassword({ ...requestData, token }, user);
     return {
       status: 'success',
       message: 'Your password has been changed successfully!',
@@ -132,7 +136,7 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update Profile By Username' })
   @UseGuards(JwtGuard)
-  @Put('/:username/update')
+  @Put('/update')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
@@ -157,20 +161,31 @@ export class UsersController {
       status: 'success',
       message: 'Your profile has been updated successfully!',
     };
-
   }
 
-  @ApiOperation({ summary: 'Password forgot by the user', description: 'Facilitates the password change process' })
+  @ApiOperation({
+    summary: 'Password forgot by the user',
+    description: 'Facilitates the password change process',
+  })
   @Post('/password/forget')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
     type: ForgotPasswordResponseDto,
   })
-  async forgotPassword(@Body() reqData: ForgotPasswordDTO, @Ip() ip) {
-    const data = await this.userService.forgotPassword(reqData.email, ip);
+  async forgotPassword(
+    @Body() reqData: ForgotPasswordDTO,
+    @Ip() ip: string,
+    @Req() request: any,
+  ) {
+    const data = await this.userService.forgotPassword(
+      reqData.email,
+      ip,
+      request.device.type,
+    );
     return {
-      status: 'success', message: 'Email has been sent for password reset!'
-    }
+      status: 'success',
+      message: 'Email has been sent for password reset!',
+    };
   }
 }

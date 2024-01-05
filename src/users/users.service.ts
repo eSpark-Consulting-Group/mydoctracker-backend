@@ -1,7 +1,7 @@
 import {
+  BadRequestException,
   ConflictException,
-  HttpException,
-  HttpStatus,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -11,14 +11,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserStatus, UserRoles, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import {
-  ForgotPasswordDTO,
-  SigninDTO,
-  SignupDTO,
-  UpdateProfileDTO,
-} from './dto/users-dto';
+import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
-import { CurrentUser } from '../utils/decorators/current-user';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +21,7 @@ export class UsersService {
     private userRepositry: Repository<Users>,
     private jwtService: JwtService,
     private fileUploadService: CloudStorageService,
-  ) { }
+  ) {}
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
@@ -112,25 +106,67 @@ export class UsersService {
     return token;
   }
 
-  async changePassword({ newPassword, oldPassword }, currentUser: Users) {
+  async changePassword(
+    data: {
+      oldPassword?: string;
+      newPassword: string;
+      token?: string;
+    },
+    currentUser: Users,
+  ) {
+    const { newPassword, oldPassword, token } = data;
     const user = await this.userRepositry.findOne({
       where: { id: currentUser.id, status: UserStatus.ACTIVE },
     });
     if (!user) {
       throw new NotFoundException('User not Found!');
     }
-    const isPassCorrect = await bcrypt.compare(
-      oldPassword,
-      user.hashedPassword,
-    );
-    if (!isPassCorrect) {
-      throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
+    let payload;
+    if (token) {
+      try {
+        payload = await this.jwtService.verifyAsync(token, {
+          secret: process.env.JWT_SECRET,
+        });
+      } catch (error) {
+        throw new UnauthorizedException(error.message);
+      }
+      const isPassCorrect = payload.oldPasswordHash === user.hashedPassword;
+      if (!isPassCorrect) {
+        throw new ForbiddenException('Request is malformed, Please try again!');
+      }
+      const iat = payload.iat;
+      const exp = payload.exp;
+      const tokenData = {
+        ip: payload.ip,
+        generated_at: new Date(iat * 1000),
+        expires_at: new Date(exp * 1000),
+        password_updated_at: new Date(),
+        device: payload.device,
+        oldPasswordHash: payload.oldPasswordHash,
+      };
+      if (user.meta) {
+        user.meta.reset_history.push(tokenData);
+      } else {
+        user.meta = { reset_history: [tokenData] };
+      }
+    } else {
+      if (oldPassword) {
+        const isPassCorrect = await bcrypt.compare(
+          oldPassword,
+          user.hashedPassword,
+        );
+        if (!isPassCorrect) {
+          throw new ForbiddenException('Old password is wrong');
+        }
+      } else {
+        throw new BadRequestException('Please provide old password');
+      }
     }
     user.hashedPassword = this.hashPassword(newPassword);
     await this.userRepositry.save(user);
   }
 
-  async forgotPassword(email: string, ip: string) {
+  async forgotPassword(email: string, ip: string, device: string) {
     const user = await this.userRepositry.findOne({
       where: { email },
     });
@@ -142,14 +178,20 @@ export class UsersService {
     }
 
     let date = Date.now();
-    const payload = { ip: ip, email: user.email, date: date, oldPasswordHash: user.hashedPassword };
+    const payload = {
+      ip: ip,
+      email: user.email,
+      date: date,
+      oldPasswordHash: user.hashedPassword,
+      device,
+    };
 
     let token = await this.jwtService.signAsync(payload, {
       expiresIn: 30 * 60,
     });
 
     user.reset_token = token;
-    await this.userRepositry.save(user)
+    await this.userRepositry.save(user);
   }
 
   async updateProfile(

@@ -54,7 +54,7 @@ export class Users {
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
-  @Column({ type: 'json', default: null })
+  @Column({ type: 'json', default: null, nullable: true })
   meta: UserMeta;
 }
 
