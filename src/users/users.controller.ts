@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
+  Ip,
   Post,
   Put,
   UploadedFiles,
@@ -20,6 +22,7 @@ import {
 } from '@nestjs/swagger';
 import {
   ChangePasswordDTO,
+  ForgotPasswordDTO,
   SigninDTO,
   SignupDTO,
   UpdateProfileDTO,
@@ -31,6 +34,7 @@ import {
 } from 'src/utils/APIResponse';
 import {
   ChangePasswordResponseDto,
+  ForgotPasswordResponseDto,
   SigninResponseDto,
   SingupResponseDto,
   UpdateProfileResponseDto,
@@ -39,11 +43,13 @@ import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { imageFileInterceptor } from 'src/utils/helpers/interceptors/file.upload';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/User.entity';
+import { get } from 'https';
+import { request } from 'http';
 
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(private userService: UsersService) { }
   @ApiOperation({
     summary: 'Signup a single user',
     description:
@@ -151,5 +157,20 @@ export class UsersController {
       status: 'success',
       message: 'Your profile has been updated successfully!',
     };
+
+  }
+
+  @ApiOperation({ summary: 'Password forgot by the user', description: 'Facilitates the password change process' })
+  @Post('/password/forget')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: ForgotPasswordResponseDto,
+  })
+  async forgotPassword(@Body() reqData: ForgotPasswordDTO, @Ip() ip) {
+    const data = await this.userService.forgotPassword(reqData.email, ip);
+    return {
+      status: 'success', message: 'Email has been sent for password reset!'
+    }
   }
 }

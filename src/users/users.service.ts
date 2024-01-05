@@ -11,8 +11,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserStatus, UserRoles, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
+import {
+  ForgotPasswordDTO,
+  SigninDTO,
+  SignupDTO,
+  UpdateProfileDTO,
+} from './dto/users-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
+import { CurrentUser } from '../utils/decorators/current-user';
 
 @Injectable()
 export class UsersService {
@@ -21,7 +27,7 @@ export class UsersService {
     private userRepositry: Repository<Users>,
     private jwtService: JwtService,
     private fileUploadService: CloudStorageService,
-  ) {}
+  ) { }
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
@@ -122,6 +128,28 @@ export class UsersService {
     }
     user.hashedPassword = this.hashPassword(newPassword);
     await this.userRepositry.save(user);
+  }
+
+  async forgotPassword(email: string, ip: string) {
+    const user = await this.userRepositry.findOne({
+      where: { email },
+    });
+    if (!user) {
+      throw new NotFoundException('User not Found!');
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(`Your account has been deactivated!`);
+    }
+
+    let date = Date.now();
+    const payload = { ip: ip, email: user.email, date: date, oldPasswordHash: user.hashedPassword };
+
+    let token = await this.jwtService.signAsync(payload, {
+      expiresIn: 30 * 60,
+    });
+
+    user.reset_token = token;
+    await this.userRepositry.save(user)
   }
 
   async updateProfile(

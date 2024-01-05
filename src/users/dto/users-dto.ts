@@ -140,6 +140,17 @@ export class ChangePasswordDTO {
   readonly newPassword: string;
 }
 
+export class ForgotPasswordDTO {
+  @ApiProperty({
+    type: String,
+    example: 'email@email.com',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  readonly email: string;
+}
+
 export class UpdateProfileDTO {
   @ApiProperty({ type: String, required: false })
   @IsString({ message: 'First name must be a string' })

@@ -12,7 +12,7 @@ export class UnknownExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    // console.log('[ERROR] => catched in unknown exception filter', exception);
+    console.log('[ERROR] => catched in unknown exception filter', exception);
 
     const status =
       exception instanceof HttpException
