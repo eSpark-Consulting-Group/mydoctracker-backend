@@ -21,7 +21,7 @@ export class UsersService {
     private userRepositry: Repository<Users>,
     private jwtService: JwtService,
     private fileUploadService: CloudStorageService,
-  ) {}
+  ) { }
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
@@ -46,7 +46,7 @@ export class UsersService {
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };
       let token;
-      if (newUser.rememberMe) {
+      if (newUser?.rememberMe) {
         token = await this.jwtService.signAsync(payload);
       } else {
         token = await this.jwtService.signAsync(payload, {
@@ -96,7 +96,7 @@ export class UsersService {
     }
     const payload = { id: foundUser.id, email: foundUser.email };
     let token;
-    if (user.rememberMe) {
+    if (user?.rememberMe) {
       token = await this.jwtService.signAsync(payload);
     } else {
       token = await this.jwtService.signAsync(payload, {
@@ -116,10 +116,13 @@ export class UsersService {
   ) {
     const { newPassword, oldPassword, token } = data;
     const user = await this.userRepositry.findOne({
-      where: { id: currentUser.id, status: UserStatus.ACTIVE },
+      where: { id: currentUser.id },
     });
     if (!user) {
       throw new NotFoundException('User not Found!');
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(`Your account has been deactivated!`);
     }
     let payload;
     if (token) {
@@ -149,24 +152,23 @@ export class UsersService {
       } else {
         user.meta = { reset_history: [tokenData] };
       }
-    } else {
-      if (oldPassword) {
-        const isPassCorrect = await bcrypt.compare(
-          oldPassword,
-          user.hashedPassword,
-        );
-        if (!isPassCorrect) {
-          throw new ForbiddenException('Old password is wrong');
-        }
-      } else {
-        throw new BadRequestException('Please provide old password');
+    } else if (oldPassword) {
+      const isPassCorrect = await bcrypt.compare(
+        oldPassword,
+        user.hashedPassword,
+      );
+      if (!isPassCorrect) {
+        throw new ForbiddenException('Old password is wrong');
       }
+    } else {
+      throw new BadRequestException('Please provide old password');
     }
     user.hashedPassword = this.hashPassword(newPassword);
     await this.userRepositry.save(user);
   }
 
-  async forgotPassword(email: string, ip: string, device: string) {
+  async forgotPassword(email: string, ip: string, device: any) {
+    const deviceInfo = `${device.type}, ${device.parser.useragent.os.family}, ${device.parser.useragent.family}`
     const user = await this.userRepositry.findOne({
       where: { email },
     });
@@ -177,16 +179,16 @@ export class UsersService {
       throw new UnauthorizedException(`Your account has been deactivated!`);
     }
 
-    let date = Date.now();
+    const date = Date.now();
     const payload = {
       ip: ip,
       email: user.email,
       date: date,
       oldPasswordHash: user.hashedPassword,
-      device,
+      device: deviceInfo,
     };
 
-    let token = await this.jwtService.signAsync(payload, {
+    const token = await this.jwtService.signAsync(payload, {
       expiresIn: 30 * 60,
     });
 
@@ -201,10 +203,13 @@ export class UsersService {
   ) {
     try {
       const user = await this.userRepositry.findOne({
-        where: { id: currentUser.id, status: UserStatus.ACTIVE },
+        where: { id: currentUser.id },
       });
       if (!user) {
         throw new NotFoundException('User not Found!');
+      }
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new UnauthorizedException(`Your account has been deactivated!`);
       }
       if (file && file.length) {
         const response = await this.fileUploadService.uploadFileInS3(

@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new UnknownExceptionFilter());
   app.useGlobalPipes(new ValidationPipe());
-  app.use(device.capture());
+  app.use(device.capture({ parseUserAgent: true }));
   const config = new DocumentBuilder()
     .setTitle('MyDocTracker APIs')
     .addBearerAuth()

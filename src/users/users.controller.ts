@@ -20,6 +20,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import {
@@ -45,13 +46,13 @@ import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { imageFileInterceptor } from 'src/utils/helpers/interceptors/file.upload';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/User.entity';
-import { get } from 'https';
-import { request } from 'http';
+import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
+import { STRINGS } from 'enum';
 
-@Controller('users')
+@Controller(STRINGS.USERS_ROUTE)
 @ApiTags('Users')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(private userService: UsersService) { }
   @ApiOperation({
     summary: 'Signup a single user',
     description:
@@ -99,9 +100,10 @@ export class UsersController {
     };
   }
 
+  @ApiSecurity('key')
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Change Password By Username',
+    summary: 'Change Password',
     description:
       'Facilitates the password change process for a specific user identified by "username". Accepts "ChangePasswordDTO" containing old and new password details for validation. Utilizes the "UserService.changePassword" method to update the user password securely, requiring correct authentication before modifying the password data. The endpoint responds with a "status" indicating success upon a successful password change. It ensures security and data integrity by enforcing the password change only for the authenticated user. Failed password change attempts prompt relevant error responses or appropriate status codes. This endpoint is crucial for ensuring user account security and password management.',
   })
@@ -110,9 +112,10 @@ export class UsersController {
     type: NotFoundResponseBody,
     status: 404,
   })
-  @UseGuards(JwtGuard)
+  @UseGuards(ApiKeyAuthGuard, JwtGuard)
+
   @ApiQuery({ name: 'token', required: false })
-  @Put('/change-password')
+  @Put(`${STRINGS.CHANGE_PASSWORD_ROUTE}`)
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
@@ -134,7 +137,7 @@ export class UsersController {
     };
   }
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update Profile By Username' })
+  @ApiOperation({ summary: 'Update Profile' })
   @UseGuards(JwtGuard)
   @Put('/update')
   @HttpCode(200)
@@ -164,7 +167,7 @@ export class UsersController {
   }
 
   @ApiOperation({
-    summary: 'Password forgot by the user',
+    summary: 'Generate password reset link',
     description: 'Facilitates the password change process',
   })
   @Post('/password/forget')
@@ -181,11 +184,11 @@ export class UsersController {
     const data = await this.userService.forgotPassword(
       reqData.email,
       ip,
-      request.device.type,
+      request.device,
     );
     return {
       status: 'success',
-      message: 'Email has been sent for password reset!',
+      message: 'Email has been sent for password reset!'
     };
   }
 }
