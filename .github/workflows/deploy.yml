@@ -20,12 +20,15 @@ jobs:
       MYSQL_PORT: 3306
 
     steps:
-      - name: Create .env file
-        uses: ozaytsev86/create-env-file@v1
-        with:
-          INPUT_ENV_TEST_API_KEY: 123
-          INPUT_ENV_ANOTHER_KEY: 123
       - uses: actions/checkout@v3
+      - name: Generate .env file
+        run: |
+          echo "PORT=${PORT}" > .env
+          echo "MYSQL_HOST=${MYSQL_HOST}" >> .env
+          echo "MYSQL_USER=${MYSQL_USER}" >> .env
+          echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
+          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
+          echo "MYSQL_PORT=${MYSQL_PORT}" >> .env
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
