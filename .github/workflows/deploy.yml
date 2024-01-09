@@ -15,7 +15,7 @@ jobs:
       PORT: ${{ secrets.PORT }}
       MYSQL_HOST: localhost
       MYSQL_USER: dev
-      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
+      MYSQL_PASSWORD: jL#4p@*9vT$!7
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       JWT_EXPIRE: ${{ secrets.JWT_EXPIRE }}
@@ -28,9 +28,6 @@ jobs:
         run: |
           echo "PORT=${PORT}" > .env
           echo "MYSQL_HOST=${MYSQL_HOST}" >> .env
-          echo "MYSQL_USER=${MYSQL_USER}" >> .env
-          echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
-          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
           echo "MYSQL_USER=${MYSQL_USER}" >> .env
           echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
           echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
