@@ -13,8 +13,8 @@ jobs:
 
     env:
       PORT: ${{ secrets.PORT }}
-      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
-      MYSQL_USER: ${{ secrets.MYSQL_USER_DEV }}
+      MYSQL_HOST: localhost
+      MYSQL_USER: dev
       MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
