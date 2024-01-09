@@ -13,7 +13,7 @@ jobs:
 
     env:
       PORT: ${{ secrets.PORT }}
-      MYSQL_HOST: localhost
+      MYSQL_HOST: ${{secrets.MYSQL_HOST}}
       MYSQL_USER: dev
       MYSQL_PASSWORD: jL#4p@*9vT$!7
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
