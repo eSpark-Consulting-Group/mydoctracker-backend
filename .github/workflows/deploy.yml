@@ -17,6 +17,10 @@ jobs:
       MYSQL_USER: ${{ secrets.MYSQL_USER_DEV }}
       MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRE: ${{ secrets.JWT_EXPIRE }}
+      API_KEY: ${{ secrets.API_KEY }}
+      MYSQL_PORT: 3306
 
     steps:
       - uses: actions/checkout@v3
@@ -27,6 +31,13 @@ jobs:
           echo "MYSQL_USER=${MYSQL_USER}" >> .env
           echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
           echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
+          echo "MYSQL_USER=${MYSQL_USER}" >> .env
+          echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
+          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
+          echo "JWT_SECRET=${JWT_SECRET}" >> .env
+          echo "JWT_EXPIRE=${JWT_EXPIRE}" >> .env
+          echo "API_KEY=${API_KEY}" >> .env
+          echo "MYSQL_PORT=${MYSQL_PORT}" >> .env
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
