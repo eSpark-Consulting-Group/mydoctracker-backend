@@ -42,5 +42,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm i
+      - name: Display Node.js Environment
+        run: node -e "console.log(process.env)"
       - run: npm run migration:run
-      - run: npm run start
