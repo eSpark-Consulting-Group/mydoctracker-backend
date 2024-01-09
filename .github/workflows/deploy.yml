@@ -39,7 +39,6 @@ jobs:
           echo "API_KEY=${API_KEY}" >> .env
           echo "MYSQL_PORT=${MYSQL_PORT}" >> .env
 
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
