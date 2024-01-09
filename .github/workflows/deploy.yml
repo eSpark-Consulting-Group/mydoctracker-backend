@@ -2,11 +2,11 @@ name: Deployment on Dev Environment
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: ["develop"]
 jobs:
   build-deploy:
     runs-on: develop
- 
+
     strategy:
       matrix:
         node-version: [18.x]
@@ -18,14 +18,19 @@ jobs:
       MYSQL_PASSWORD: jL#4p@*9vT$!7
       MYSQL_DATABASE: mydoctracker-dev
       MYSQL_PORT: 3306
-  
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm i
-    - run: npm run migration:run
-    - run: npm run start
+      - name: Create .env file
+        uses: ozaytsev86/create-env-file@v1
+        with:
+          INPUT_ENV_TEST_API_KEY: 123
+          INPUT_ENV_ANOTHER_KEY: 123
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm i
+      - run: npm run migration:run
+      - run: npm run start
