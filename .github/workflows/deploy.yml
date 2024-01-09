@@ -14,12 +14,19 @@ jobs:
     env:
       PORT: ${{ secrets.PORT }}
       MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER_DEV }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
+
     steps:
       - uses: actions/checkout@v3
       - name: Generate .env file
         run: |
           echo "PORT=${PORT}" > .env
           echo "MYSQL_HOST=${MYSQL_HOST}" >> .env
+          echo "MYSQL_USER=${MYSQL_USER}" >> .env
+          echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
+          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
