@@ -13,13 +13,28 @@ jobs:
 
     env:
       PORT: ${{ secrets.PORT }}
+      MYSQL_HOST: localhost
+      MYSQL_USER: ${{ secrets.MYSQL_USER_DEV }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
+      MYSQL_PORT: 3306
+      : ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRE: ${{ secrets.JWT_EXPIRE }}
+      API_KEY: ${{ secrets.API_KEY }}
 
     steps:
       - uses: actions/checkout@v3
       - name: Generate .env file
         run: |
           echo "PORT=${PORT}" > .env
-
+          echo "MYSQL_HOST=${MYSQL_HOST}" >> .env
+          echo "MYSQL_USER=${MYSQL_USER}" >> .env
+          echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
+          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
+          echo "MYSQL_PORT=${MYSQL_PORT}" >> .env
+          echo "JWT_SECRET=${JWT_SECRET}" >> .env
+          echo "JWT_EXPIRE=${JWT_EXPIRE}" >> .env
+          echo "API_KEY=${API_KEY}" >> .env
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
