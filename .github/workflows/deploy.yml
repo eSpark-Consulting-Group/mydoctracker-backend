@@ -31,6 +31,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm i
+      
+      - name: Build application
+        run: npm run build
 
-      - name : Generating migrations
-      - run: npm run migration:run      
+      - name: Deploy application
+        run: npm run migration:run
+
+      - name: Restart NestJS application
+        run: pm2 restart backend
