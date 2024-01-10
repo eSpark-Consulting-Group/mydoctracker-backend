@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'userbackend',
+      name: 'backend',
       instances: 'max',
       exec_mode: 'cluster',
       script: 'dist/main.js',

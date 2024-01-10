@@ -32,12 +32,9 @@ jobs:
           cache: "npm"
       - run: npm i
       
-      - name: Build application
-        run: npm run build
-
       - name: Run migration for database
         run: npm run migration:run
 
       - name: Restart NestJS application
-        run: pm2 restart dist/src/main.js --name backend
+        run: npm run deploy:dev
         
