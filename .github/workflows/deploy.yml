@@ -23,6 +23,18 @@ jobs:
       API_KEY: ${{ secrets.API_KEY }}
 
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm i
+      
+      - name: Run migration for database
+        run: npm run migration:run
+
       - name: Restart NestJS application
         run: npm run deploy:dev
         
