@@ -5,7 +5,6 @@ module.exports = {
       instances: "max",
       exec_mode: "cluster",
       script: 'dist/src/main.js',
-      args: 'start -p 3001',
       watch: true,
       env_production: {
         NODE_ENV: "production"
