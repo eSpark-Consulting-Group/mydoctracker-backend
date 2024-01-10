@@ -39,5 +39,5 @@ jobs:
         run: npm run migration:run
 
       - name: Restart NestJS application
-        run: pm2 start dist/src/main.js --name backend
+        run: pm2 restart dist/src/main.js --name backend
         
