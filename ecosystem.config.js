@@ -2,10 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'backend',
-      script: 'dist/main.js',
       instances: "max",
       exec_mode: "cluster",
-      script: 'dist/main.js',
+      script: 'dist/src/main.js',
       args: 'start -p 3001',
       watch: true,
       env: {
