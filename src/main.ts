@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  console.log("==============================",process.env.MYSQL_PASSWORD)
+  console.log("==============================",process.env.ABC)
   const config = new DocumentBuilder()
     .setTitle('MyDocTracker APIs')
     .setDescription(
