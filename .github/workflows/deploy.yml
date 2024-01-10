@@ -2,10 +2,10 @@ name: Deployment on Dev Environment
 
 on:
   push:
-    branches: ["develop"]
+    branches: ["qa"]
 jobs:
   build-deploy:
-    runs-on: develop
+    runs-on: qa
 
     strategy:
       matrix:
@@ -14,9 +14,9 @@ jobs:
     env:
       PORT: ${{ secrets.PORT }}
       MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
-      MYSQL_USER: ${{ secrets.MYSQL_USER_DEV }}
-      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
-      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER_QA }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_QA }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_QA }}
       MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       JWT_EXPIRE: ${{ secrets.JWT_EXPIRE }}
@@ -36,6 +36,6 @@ jobs:
         run: npm run migration:run
 
       - name: Restart NestJS application
-        run: npm run deploy:dev
+        run: npm run deploy:qa
         
         
