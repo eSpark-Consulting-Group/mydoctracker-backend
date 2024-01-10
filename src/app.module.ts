@@ -10,7 +10,7 @@ import { dataSourceOptions } from 'typeorm.config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // TypeOrmModule.forRoot(dataSourceOptions),
+    TypeOrmModule.forRoot(dataSourceOptions),
   ],
   controllers: [AppController],
   providers: [AppService],
