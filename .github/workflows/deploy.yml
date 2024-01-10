@@ -35,9 +35,9 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Deploy application
+      - name: Run migration for database
         run: npm run migration:run
 
       - name: Restart NestJS application
-        run: pm2 start dist/src/main.js
+        run: pm2 start dist/src/main.js --name backend
         
