@@ -24,17 +24,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Generate .env file
-        run: |
-          echo "PORT=${PORT}" > .env
-          echo "MYSQL_HOST=${MYSQL_HOST}" >> .env
-          echo "MYSQL_USER=${MYSQL_USER}" >> .env
-          echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}" >> .env
-          echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
-          echo "JWT_SECRET=${JWT_SECRET}" >> .env
-          echo "JWT_EXPIRE=${JWT_EXPIRE}" >> .env
-          echo "API_KEY=${API_KEY}" >> .env
-          echo "MYSQL_PORT=${MYSQL_PORT}" >> .env
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -42,5 +31,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: npm i
-      - run: npm run migration:run
-      - run: npm run start
+
+      - name : Generating migrations
+      - run: npm run migration:run      
