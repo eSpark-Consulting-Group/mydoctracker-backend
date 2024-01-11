@@ -13,6 +13,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
+import { EmailService } from 'src/utils/helpers/email';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +22,7 @@ export class UsersService {
     private userRepositry: Repository<Users>,
     private jwtService: JwtService,
     private fileUploadService: CloudStorageService,
+    private readonly sendGridClient: EmailService
   ) { }
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
@@ -193,6 +195,8 @@ export class UsersService {
     });
 
     user.reset_token = token;
+    //TODO: craete a reset link
+    await this.sendGridClient.SendForgotPasswordEmail(user.email, user.username, token);
     await this.userRepositry.save(user);
   }
 
