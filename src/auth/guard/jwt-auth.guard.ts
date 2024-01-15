@@ -5,6 +5,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { STRINGS } from 'enum';
 import { Request } from 'express';
 import { UserStatus } from 'src/entities/User.entity';
 import { UsersService } from 'src/users/users.service';
@@ -15,11 +16,15 @@ export class JwtGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private userSerive: UsersService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+    const chanePassPath = `/${STRINGS.USERS_ROUTE}/${STRINGS.CHANGE_PASSWORD_ROUTE}`
+    if (request.path === chanePassPath && request.query?.token) {
+      return true
+    }
     if (!token) {
       throw new APIException(
         {

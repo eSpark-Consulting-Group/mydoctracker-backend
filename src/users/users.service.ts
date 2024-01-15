@@ -1,7 +1,7 @@
 import {
+  BadRequestException,
   ConflictException,
-  HttpException,
-  HttpStatus,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -13,6 +13,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
+import { EmailService } from 'src/utils/helpers/email';
 
 @Injectable()
 export class UsersService {
@@ -21,7 +22,8 @@ export class UsersService {
     private userRepositry: Repository<Users>,
     private jwtService: JwtService,
     private fileUploadService: CloudStorageService,
-  ) {}
+    private readonly sendGridClient: EmailService
+  ) { }
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
@@ -46,7 +48,7 @@ export class UsersService {
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };
       let token;
-      if (newUser.rememberMe) {
+      if (newUser?.rememberMe) {
         token = await this.jwtService.signAsync(payload);
       } else {
         token = await this.jwtService.signAsync(payload, {
@@ -96,7 +98,7 @@ export class UsersService {
     }
     const payload = { id: foundUser.id, email: foundUser.email };
     let token;
-    if (user.rememberMe) {
+    if (user?.rememberMe) {
       token = await this.jwtService.signAsync(payload);
     } else {
       token = await this.jwtService.signAsync(payload, {
@@ -106,21 +108,95 @@ export class UsersService {
     return token;
   }
 
-  async changePassword({ newPassword, oldPassword }, currentUser: Users) {
+  async changePassword(
+    data: {
+      oldPassword?: string;
+      newPassword: string;
+      token?: string;
+    },
+    currentUser: Users,
+  ) {
+    const { newPassword, oldPassword, token } = data;
     const user = await this.userRepositry.findOne({
-      where: { id: currentUser.id, status: UserStatus.ACTIVE },
+      where: { id: currentUser.id },
     });
     if (!user) {
       throw new NotFoundException('User not Found!');
     }
-    const isPassCorrect = await bcrypt.compare(
-      oldPassword,
-      user.hashedPassword,
-    );
-    if (!isPassCorrect) {
-      throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(`Your account has been deactivated!`);
+    }
+    let payload;
+    if (token) {
+      try {
+        payload = await this.jwtService.verifyAsync(token, {
+          secret: process.env.JWT_SECRET,
+        });
+      } catch (error) {
+        throw new UnauthorizedException(error.message);
+      }
+      const isPassCorrect = payload.oldPasswordHash === user.hashedPassword;
+      if (!isPassCorrect) {
+        throw new ForbiddenException('Request is malformed, Please try again!');
+      }
+      const iat = payload.iat;
+      const exp = payload.exp;
+      const tokenData = {
+        ip: payload.ip,
+        generated_at: new Date(iat * 1000),
+        expires_at: new Date(exp * 1000),
+        password_updated_at: new Date(),
+        device: payload.device,
+        oldPasswordHash: payload.oldPasswordHash,
+      };
+      if (user.meta) {
+        user.meta.reset_history.push(tokenData);
+      } else {
+        user.meta = { reset_history: [tokenData] };
+      }
+    } else if (oldPassword) {
+      const isPassCorrect = await bcrypt.compare(
+        oldPassword,
+        user.hashedPassword,
+      );
+      if (!isPassCorrect) {
+        throw new ForbiddenException('Old password is wrong');
+      }
+    } else {
+      throw new BadRequestException('Please provide old password');
     }
     user.hashedPassword = this.hashPassword(newPassword);
+    await this.userRepositry.save(user);
+  }
+
+  async forgotPassword(email: string, ip: string, device: any) {
+    const deviceInfo = `${device.type}, ${device.parser.useragent.os.family}, ${device.parser.useragent.family}`
+    const user = await this.userRepositry.findOne({
+      where: { email },
+    });
+    if (!user) {
+      throw new NotFoundException('User not Found!');
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException(`Your account has been deactivated!`);
+    }
+
+    const date = Date.now();
+    const payload = {
+      ip: ip,
+      email: user.email,
+      date: date,
+      oldPasswordHash: user.hashedPassword,
+      device: deviceInfo,
+    };
+
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: 30 * 60,
+    });
+
+    user.reset_token = token;
+    //TODO: craete a reset link
+    await this.sendGridClient.SendForgotPasswordEmail(user.email, user.username, token);
     await this.userRepositry.save(user);
   }
 
@@ -131,10 +207,13 @@ export class UsersService {
   ) {
     try {
       const user = await this.userRepositry.findOne({
-        where: { id: currentUser.id, status: UserStatus.ACTIVE },
+        where: { id: currentUser.id },
       });
       if (!user) {
         throw new NotFoundException('User not Found!');
+      }
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new UnauthorizedException(`Your account has been deactivated!`);
       }
       if (file && file.length) {
         const response = await this.fileUploadService.uploadFileInS3(

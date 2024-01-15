@@ -3,11 +3,13 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from './utils/ValidationPipe/validation.pipe';
 import { UnknownExceptionFilter } from './utils/filters/UnknownExceptionFilter.filter';
+import * as device from 'express-device';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new UnknownExceptionFilter());
-  app.useGlobalPipes(new ValidationPipe()); // app.use(fileUpload());
+  app.useGlobalPipes(new ValidationPipe());
+  app.use(device.capture({ parseUserAgent: true }));
   const config = new DocumentBuilder()
     .setTitle('MyDocTracker APIs')
     .addBearerAuth()

@@ -45,6 +45,23 @@ export class ChangePasswordResponseDto {
   })
   message: string;
 }
+
+export class ForgotPasswordResponseDto {
+  @ApiProperty({ description: 'Status of the response', example: 'success' })
+  status: string;
+
+  @ApiProperty({
+    description: 'Response message',
+    example: 'Please check your mail for password reset link.',
+  })
+  message: string;
+
+  @ApiProperty({
+    description: 'Response data',
+  })
+  data: Users;
+}
+
 export class UpdateProfileResponseDto {
   @ApiProperty({ description: 'Status of the response', example: 'success' })
   status: string;

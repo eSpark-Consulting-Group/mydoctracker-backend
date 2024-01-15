@@ -10,6 +10,9 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { CONTACT_REGEX, PASSWORD_REGEX } from 'enum';
+
+const invalidContactMsg = "Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890"
 
 export class SignupDTO {
   @ApiProperty({
@@ -53,7 +56,7 @@ export class SignupDTO {
   @IsNotEmpty()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @MaxLength(20, { message: 'Password must not exceed 20 characters' })
-  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
+  @Matches(PASSWORD_REGEX, {
     message:
       'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
   })
@@ -66,10 +69,7 @@ export class SignupDTO {
   @IsString()
   @IsNotEmpty()
   @IsDefined()
-  @Matches(/^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/, {
-    message:
-      'Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890',
-  })
+  @Matches(CONTACT_REGEX, { message: invalidContactMsg, })
   readonly contact: string;
 
   @ApiProperty({
@@ -77,6 +77,7 @@ export class SignupDTO {
     example: true,
   })
   @IsBoolean()
+  @IsOptional()
   readonly rememberMe: boolean;
 }
 
@@ -97,7 +98,7 @@ export class SigninDTO {
   @IsNotEmpty()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @MaxLength(20, { message: 'Password must not exceed 20 characters' })
-  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
+  @Matches(PASSWORD_REGEX, {
     message:
       'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
   })
@@ -108,6 +109,7 @@ export class SigninDTO {
     example: true,
   })
   @IsBoolean()
+  @IsOptional()
   readonly rememberMe: boolean;
 }
 export class ChangePasswordDTO {
@@ -116,14 +118,15 @@ export class ChangePasswordDTO {
     example: 'Admin@test123',
   })
   @IsString()
-  @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
-  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
+  @IsOptional()
+  @IsNotEmpty({ message: 'Old password should not be empty' })
+  @MinLength(8, { message: 'Old Password must be at least 8 characters long' })
+  @MaxLength(20, { message: 'Old Password must not exceed 20 characters' })
+  @Matches(PASSWORD_REGEX, {
     message:
-      'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
+      'Old Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
   })
-  readonly oldPassword: string;
+  readonly oldPassword?: string;
 
   @ApiProperty({
     type: String,
@@ -131,13 +134,24 @@ export class ChangePasswordDTO {
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
-  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$/, {
+  @MinLength(8, { message: 'New Password must be at least 8 characters long' })
+  @MaxLength(20, { message: 'New Password must not exceed 20 characters' })
+  @Matches(PASSWORD_REGEX, {
     message:
-      'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
+      'New Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
   })
   readonly newPassword: string;
+}
+
+export class ForgotPasswordDTO {
+  @ApiProperty({
+    type: String,
+    example: 'email@email.com',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  readonly email: string;
 }
 
 export class UpdateProfileDTO {
@@ -158,10 +172,7 @@ export class UpdateProfileDTO {
 
   @ApiProperty({ type: String, required: false })
   @IsDefined()
-  @Matches(/^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/, {
-    message:
-      'Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890',
-  })
+  @Matches(CONTACT_REGEX, { message: invalidContactMsg, })
   @IsOptional()
   readonly contact: string;
   @ApiProperty({
