@@ -15,5 +15,5 @@ export class Admin {
   password: string;
 
   @Column({ type: 'json' })
-  meta: any;
+  meta: Record<string, unknown>;
 }
