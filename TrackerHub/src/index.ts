@@ -47,7 +47,7 @@ io.use(async (socket: SocketData, next: NextFunction) => {
   } else {
     try {
       const response = await axios.get(
-        `${process.env.APP_URL}/api/admin/devices/${macAddress}`,
+        `${process.env.APP_URL}/admin/devices/${macAddress}`,
       );
       socket.device = response.data;
       next();
