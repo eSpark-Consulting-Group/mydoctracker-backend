@@ -14,6 +14,6 @@ export class Admin {
   @Column()
   password: string;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', default: null })
   meta: Record<string, unknown>;
 }
