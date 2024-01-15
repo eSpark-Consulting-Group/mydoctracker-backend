@@ -7,7 +7,7 @@ export enum UserRoles {
   ACU = 'ACU',
   RCU = 'RCU',
 }
-export enum Status {
+export enum UserStatus {
   ACTIVE = 'ACTIVE',
   DEACTIVE = 'DEACTIVE',
 }
@@ -24,27 +24,30 @@ export class Users {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   profilePicture: string;
 
-  @Column({ length: 50 })
+  @Column({ length: 50, unique: true })
   username: string;
 
   @Column({ unique: true, length: 100 })
   email: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   employeePassword: string;
 
   @Column()
   hashedPassword: string;
 
-  @Column({ length: 20 })
+  @Column({ length: 20, unique: true })
   contact: string;
+
+  @Column({ nullable: true, default: null })
+  fileId: string;
 
   @Column({ type: 'enum', enum: UserRoles, default: 'SU' })
   role: UserRoles;
 
-  @Column({ type: 'enum', enum: Status, default: 'ACTIVE' })
-  status: Status;
+  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
+  status: UserStatus;
 }
