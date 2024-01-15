@@ -81,17 +81,3 @@ export class NotFoundResponseBody{
   })
   trace: object;
 }
-
-export class DeviceNotFoundResponseBody{
-  @ApiProperty({
-    description: 'Error message',
-    example: 'Internal server error',
-  })
-  status: 'error';
-
-  @ApiProperty({
-    description: 'Error message',
-    example: 'Device not found!',
-  })
-  message: string;
-}
