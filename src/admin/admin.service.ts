@@ -1,4 +1,4 @@
-import { Body, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceInventory } from 'src/entities/DeviceInventory.entity';
 import { DeviceMacDTO } from 'src/users/dto/device-dto';
@@ -16,7 +16,7 @@ export class AdminService {
             where: { macAddress: macAddress.macAddress },
         });
         if (!foundDevice) {
-            throw new UnauthorizedException(`Invalid device`);
+            throw new NotFoundException(`Invalid device`);
         }
     }
 }
