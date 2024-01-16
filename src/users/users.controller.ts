@@ -137,7 +137,7 @@ export class UsersController {
     };
   }
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update Profile' })
+  @ApiOperation({ summary: 'Update Profile', description: 'Updates user profile information, including a new profile picture. Accepts an "UpdateProfileDTO" in the request body for other profile details. The "UploadedFiles" decorator captures a "profilePicture" file from the request. Utilizes the "UserService.updateProfile" method to apply changes to the user profile. Requires the authenticated user details obtained from the "@CurrentUser" decorator.  Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users to modify their profile details and upload a new profile picture.' })
   @UseGuards(JwtGuard)
   @Put('/update')
   @HttpCode(200)
@@ -168,8 +168,7 @@ export class UsersController {
 
   @ApiOperation({
     summary: 'Generate password reset link',
-    description: 'Facilitates the password change process',
-  })
+    description: 'Initiates the password reset process for a user who has forgotten their password. Accepts "ForgotPasswordDTO" containing the user email for identification. Captures the client IP address using the "@Ip" decorator and device information from the request. Utilizes the "UserService.forgotPassword" method to generate a password reset token and send an email with instructions for resetting the password. Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users who need to recover access to their accounts.'})
   @Post('/password/forget')
   @HttpCode(200)
   @ApiOkResponse({
