@@ -21,8 +21,8 @@ export class JwtGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-    const chanePassPath = `/${STRINGS.USERS_ROUTE}/${STRINGS.CHANGE_PASSWORD_ROUTE}`
-    if (request.path === chanePassPath && request.query?.token) {
+    const changePassPath = `/${STRINGS.USERS_ROUTE}/${STRINGS.CHANGE_PASSWORD_ROUTE}`
+    if (request.path === changePassPath && request.query?.token) {
       return true
     }
     if (!token) {

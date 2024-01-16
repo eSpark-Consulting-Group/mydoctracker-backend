@@ -11,8 +11,7 @@ export class EmailService {
         try {
             const mail: MailDataRequired = {
                 to: email,
-                //TODO: need sender email
-                from: '',
+                from: process.env.SENDGRID_SENDER_EMAIL,
                 templateId: process.env.SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID,
                 dynamicTemplateData: {
                     username: username,

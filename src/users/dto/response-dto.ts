@@ -71,6 +71,11 @@ export class UpdateProfileResponseDto {
     example: 'Your profile has been updated successfully!',
   })
   message: string;
+
+  @ApiProperty({
+    description: 'Response data',
+  })
+  data: Users;
 }
 
 export class GetDeviceByMacDto {

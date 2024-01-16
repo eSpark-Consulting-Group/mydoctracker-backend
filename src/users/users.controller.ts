@@ -92,11 +92,11 @@ export class UsersController {
     type: ErrorResponseBody,
   })
   async signin(@Body() reqData: SigninDTO) {
-    const token = await this.userService.signin(reqData);
+    const data = await this.userService.signin(reqData);
     return {
       status: 'success',
       message: 'You have successfully logged in',
-      data: { token },
+      data,
     };
   }
 
@@ -159,8 +159,9 @@ export class UsersController {
     @Body() reqData: UpdateProfileDTO,
     @CurrentUser() user: Users,
   ): Promise<APIResponseType> {
-    await this.userService.updateProfile(reqData, file.profilePicture, user);
+    const data = await this.userService.updateProfile(reqData, file.profilePicture, user);
     return {
+      data,
       status: 'success',
       message: 'Your profile has been updated successfully!',
     };
@@ -168,7 +169,8 @@ export class UsersController {
 
   @ApiOperation({
     summary: 'Generate password reset link',
-    description: 'Initiates the password reset process for a user who has forgotten their password. Accepts "ForgotPasswordDTO" containing the user email for identification. Captures the client IP address using the "@Ip" decorator and device information from the request. Utilizes the "UserService.forgotPassword" method to generate a password reset token and send an email with instructions for resetting the password. Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users who need to recover access to their accounts.'})
+    description: 'Initiates the password reset process for a user who has forgotten their password. Accepts "ForgotPasswordDTO" containing the user email for identification. Captures the client IP address using the "@Ip" decorator and device information from the request. Utilizes the "UserService.forgotPassword" method to generate a password reset token and send an email with instructions for resetting the password. Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users who need to recover access to their accounts.'
+  })
   @Post('/password/forget')
   @HttpCode(200)
   @ApiOkResponse({
@@ -184,6 +186,7 @@ export class UsersController {
       reqData.email,
       ip,
       request.device,
+      reqData.host
     );
     return {
       status: 'success',

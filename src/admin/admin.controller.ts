@@ -8,9 +8,9 @@ import * as device from 'express-device';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private AdminService: AdminService) {}
+  constructor(private AdminService: AdminService) { }
 
-//   @ApiExcludeEndpoint()
+  @ApiExcludeEndpoint()
   @ApiOperation({
     summary: 'Identify a device by MAC Address',
     description: 'Retrieves device information based on the specified MAC address. Accepts a "DeviceMacDTO" containing the MAC address for identification. Utilizes the "AdminService.checkDeviceByMac" method to validate and fetch device details. Responds with "data" representing the device information upon successful connection. "status" indicates the success of the operation, and "message" provides a confirmation. This endpoint is essential for querying and establishing connections with specific devices.',
@@ -22,7 +22,7 @@ export class AdminController {
     type: GetDeviceByMacDto,
   })
   @ApiNotFoundResponse({
-    description:'Not found',
+    description: 'Not found',
     type: DeviceNotFoundResponseBody
   })
   @ApiInternalServerErrorResponse({
@@ -32,9 +32,9 @@ export class AdminController {
   async getDeviceByMac(@Param() macAddress: DeviceMacDTO) {
     const checkDevice = await this.AdminService.checkDeviceByMac(macAddress);
     return {
-        data: device,
-        status: 'success',
-        message: 'You have successfully connected to the device',
-      };
+      data: device,
+      status: 'success',
+      message: 'You have successfully connected to the device',
+    };
   }
 }

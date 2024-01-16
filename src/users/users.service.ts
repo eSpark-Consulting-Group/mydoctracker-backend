@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { EmailService } from 'src/utils/helpers/email';
+import { S3_ENUMS } from 'enum';
 
 @Injectable()
 export class UsersService {
@@ -28,6 +29,12 @@ export class UsersService {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
     return hashedPassowrd;
+  }
+  private reConstructUser(user: Users) {
+    delete user.hashedPassword;
+    delete user.employeePassword;
+    delete user.reset_token;
+    return user;
   }
   getUserById(id: string) {
     return this.userRepositry.findOne({
@@ -55,8 +62,7 @@ export class UsersService {
           expiresIn: process.env.JWT_EXPIRE,
         });
       }
-      delete user.hashedPassword;
-      delete user.employeePassword;
+      this.reConstructUser(user)
       return { ...user, token };
     } catch (error) {
       if (error.errno === 1062) {
@@ -79,33 +85,34 @@ export class UsersService {
     }
   }
 
-  async signin(user: SigninDTO) {
-    const foundUser = await this.userRepositry.findOne({
-      where: { username: user.username },
+  async signin(userCreds: SigninDTO) {
+    const user = await this.userRepositry.findOne({
+      where: { username: userCreds.username },
     });
-    if (!foundUser) {
+    if (!user) {
       throw new UnauthorizedException(`Username or password invalid`);
     }
-    if (foundUser.status !== UserStatus.ACTIVE) {
+    if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException(`Your account has been deactivated!`);
     }
     const isPassCorrect = await bcrypt.compare(
-      user.password,
-      foundUser.hashedPassword,
+      userCreds.password,
+      user.hashedPassword,
     );
     if (!isPassCorrect) {
       throw new UnauthorizedException(`Username or password invalid`);
     }
-    const payload = { id: foundUser.id, email: foundUser.email };
+    const payload = { id: user.id, email: user.email };
     let token;
-    if (user?.rememberMe) {
+    if (userCreds?.rememberMe) {
       token = await this.jwtService.signAsync(payload);
     } else {
       token = await this.jwtService.signAsync(payload, {
         expiresIn: process.env.JWT_EXPIRE,
       });
     }
-    return token;
+    this.reConstructUser(user)
+    return { ...user, token };
   }
 
   async changePassword(
@@ -117,15 +124,7 @@ export class UsersService {
     currentUser: Users,
   ) {
     const { newPassword, oldPassword, token } = data;
-    const user = await this.userRepositry.findOne({
-      where: { id: currentUser.id },
-    });
-    if (!user) {
-      throw new NotFoundException('User not Found!');
-    }
-    if (user.status !== UserStatus.ACTIVE) {
-      throw new UnauthorizedException(`Your account has been deactivated!`);
-    }
+    let user: Users;
     let payload;
     if (token) {
       try {
@@ -134,6 +133,15 @@ export class UsersService {
         });
       } catch (error) {
         throw new UnauthorizedException(error.message);
+      }
+      user = await this.userRepositry.findOne({
+        where: { email: payload.email },
+      });
+      if (!user) {
+        throw new NotFoundException('User not Found!');
+      }
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new UnauthorizedException(`Your account has been deactivated!`);
       }
       const isPassCorrect = payload.oldPasswordHash === user.hashedPassword;
       if (!isPassCorrect) {
@@ -155,6 +163,15 @@ export class UsersService {
         user.meta = { reset_history: [tokenData] };
       }
     } else if (oldPassword) {
+      const user = await this.userRepositry.findOne({
+        where: { id: currentUser.id },
+      });
+      if (!user) {
+        throw new NotFoundException('User not Found!');
+      }
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new UnauthorizedException(`Your account has been deactivated!`);
+      }
       const isPassCorrect = await bcrypt.compare(
         oldPassword,
         user.hashedPassword,
@@ -169,7 +186,7 @@ export class UsersService {
     await this.userRepositry.save(user);
   }
 
-  async forgotPassword(email: string, ip: string, device: any) {
+  async forgotPassword(email: string, ip: string, device: any, host: string) {
     const deviceInfo = `${device.type}, ${device.parser.useragent.os.family}, ${device.parser.useragent.family}`
     const user = await this.userRepositry.findOne({
       where: { email },
@@ -189,14 +206,13 @@ export class UsersService {
       oldPasswordHash: user.hashedPassword,
       device: deviceInfo,
     };
-
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: 30 * 60,
     });
 
     user.reset_token = token;
-    //TODO: craete a reset link
-    await this.sendGridClient.SendForgotPasswordEmail(user.email, user.username, token);
+    const reset_link = `${host}?token=${token}`
+    await this.sendGridClient.SendForgotPasswordEmail(user.email, user.username, reset_link);
     await this.userRepositry.save(user);
   }
 
@@ -219,16 +235,18 @@ export class UsersService {
         const response = await this.fileUploadService.uploadFileInS3(
           file[0],
           user,
-          process.env.PROFILES_FOLDER_NAME,
+          S3_ENUMS.profile_pictures,
         );
         user.fileId = response.fileId;
-        user.profilePicture = `${process.env.S3_URL}${response.fileName}`;
+        user.profilePicture = `${S3_ENUMS.URL}/${response.fileName}`;
       }
       user.firstName = userData.firstName || user.firstName;
       user.lastName = userData.lastName || user.lastName;
       user.email = userData.email || user.email;
       user.contact = userData.contact || user.contact;
-      await this.userRepositry.save(user);
+      const updatedUser = await this.userRepositry.save(user);
+      this.reConstructUser(user)
+      return updatedUser;
     } catch (error) {
       if (error.errno === 1062) {
         const match = error?.sqlMessage?.match(/for key '(.*?)'/);

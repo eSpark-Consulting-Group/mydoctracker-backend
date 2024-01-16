@@ -6,13 +6,15 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { CONTACT_REGEX, PASSWORD_REGEX } from 'enum';
+import { CONTACT_REGEX, PASSWORD_REGEX, USERNAME_REGEX } from 'enum';
 
 const invalidContactMsg = "Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890"
+const invalidUsernameMsg = "Username should only contain alphanumeric characters (letters and numbers), Small Letters, Underscores (_) and hyphens (-)."
 
 export class SignupDTO {
   @ApiProperty({
@@ -33,10 +35,13 @@ export class SignupDTO {
 
   @ApiProperty({
     type: String,
-    example: 'fName-lName',
+    example: 'fname_lname',
   })
   @IsString()
   @IsNotEmpty()
+  @MinLength(3, { message: 'Ussername must be at least 3 characters long' })
+  @MaxLength(20, { message: 'Ussername must not exceed 20 characters' })
+  @Matches(USERNAME_REGEX, { message: invalidUsernameMsg })
   readonly username: string;
 
   @ApiProperty({
@@ -84,10 +89,13 @@ export class SignupDTO {
 export class SigninDTO {
   @ApiProperty({
     type: String,
-    example: 'fName-lName',
+    example: 'fname_lname',
   })
   @IsString()
   @IsNotEmpty()
+  @MinLength(3, { message: 'Ussername must be at least 3 characters long' })
+  @MaxLength(20, { message: 'Ussername must not exceed 20 characters' })
+  @Matches(USERNAME_REGEX, { message: invalidUsernameMsg })
   readonly username: string;
 
   @ApiProperty({
@@ -152,6 +160,16 @@ export class ForgotPasswordDTO {
   @IsNotEmpty()
   @IsEmail()
   readonly email: string;
+
+
+  @ApiProperty({
+    type: String,
+    example: 'abc.com',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl()
+  readonly host: string;
 }
 
 export class UpdateProfileDTO {
