@@ -13,10 +13,10 @@ jobs:
 
     env:
       PORT: ${{ secrets.PORT }}
-      MYSQL_HOST: localhost
-      MYSQL_USER: dev
-      MYSQL_PASSWORD: jL#4p@*9vT$!7
-      MYSQL_DATABASE: mydoctracker_dev
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER_DEV }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD_DEV }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE_DEV }}
       MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       JWT_EXPIRE: ${{ secrets.JWT_EXPIRE }}
