@@ -7,6 +7,7 @@ import * as device from 'express-device';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   app.useGlobalFilters(new UnknownExceptionFilter());
   app.useGlobalPipes(new ValidationPipe());
   app.use(device.capture({ parseUserAgent: true }));
@@ -22,6 +23,12 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+  app.enableCors({
+    origin: ['*'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'UPDATE', 'OPTIONS'],
+    credentials: true,
+  });
+
   await app.listen(process.env.PORT);
   console.log(`App running on port ${process.env.PORT}`);
 }

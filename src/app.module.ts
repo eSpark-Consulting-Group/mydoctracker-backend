@@ -6,9 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from 'typeorm.config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { AdminService } from './admin/admin.service';
-import { AdminController } from './admin/admin.controller';
-import { AdminModule } from './admin/admin.module';
+import { DeviceModule } from './admin/device.module';
 
 @Module({
   imports: [
@@ -18,7 +16,7 @@ import { AdminModule } from './admin/admin.module';
     TypeOrmModule.forRoot(dataSourceOptions),
     AuthModule,
     UsersModule,
-    AdminModule,
+    DeviceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

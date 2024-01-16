@@ -77,14 +77,3 @@ export class UpdateProfileResponseDto {
   })
   data: Users;
 }
-
-export class GetDeviceByMacDto {
-  @ApiProperty({ description: 'Status of the response', example: 'success' })
-  status: string;
-
-  @ApiProperty({
-    description: 'Response message',
-    example: 'Your device has been connected successfully!',
-  })
-  message: string;
-}

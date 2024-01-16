@@ -5,7 +5,7 @@ import { DeviceMacDTO } from 'src/users/dto/device-dto';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class AdminService {
+export class DeviceService {
     constructor(
         @InjectRepository(DeviceInventory)
         private deviceInventory: Repository<DeviceInventory>,
@@ -16,7 +16,8 @@ export class AdminService {
             where: { macAddress: macAddress.macAddress },
         });
         if (!foundDevice) {
-            throw new NotFoundException(`Invalid device`);
+            throw new NotFoundException(`Device not found!`);
         }
+        return foundDevice
     }
 }
