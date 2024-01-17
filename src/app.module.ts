@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from 'typeorm.config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { DeviceModule } from './admin/device.module';
+import { DeviceModule } from './device/device.module';
 
 @Module({
   imports: [
