@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "start:trackerhub": "cd TrackerHub && npm run build && pm2 startOrRestart ecosystem.config.js --env development",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -23,7 +24,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "deploy:dev": "npm run build && pm2 startOrRestart ecosystem.config.js --env development && cd TrackerHub && npm run build && pm2 startOrRestart ecosystem.config.js --env development"
+    "deploy:dev": "npm run build && pm2 startOrRestart ecosystem.config.js --env development && npm run start:trackerhub"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
