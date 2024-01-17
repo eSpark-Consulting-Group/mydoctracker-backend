@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Users } from 'src/entities/User.entity';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const B2 = require('backblaze-b2');
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CloudStorageService {
@@ -27,6 +28,28 @@ export class CloudStorageService {
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,
       fileName: `${folderName}/${user.id}`,
+      data: file.buffer,
+    });
+    if (response) {
+      return { fileId: response.data.fileId, fileName: response.data.fileName };
+    }
+    return undefined;
+  }
+  async uploadDocumentFile(
+    file,
+    user: Users,
+    folderName: string,
+  ): Promise<{ fileId: string; fileName: string }> {
+    await this.b2.authorize(); // must authorize first (authorization lasts 24 hrs)
+    const data = await this.b2.getUploadUrl({
+      bucketId: process.env.BUCKET_ID,
+    });
+    const parts = file.originalname.split('.');
+    const fileExtension = parts.pop();
+    const response = await this.b2.uploadFile({
+      uploadUrl: data.data.uploadUrl,
+      uploadAuthToken: data.data.authorizationToken,
+      fileName: `${folderName}/${user.id}/${uuidv4()}.${fileExtension}`,
       data: file.buffer,
     });
     if (response) {

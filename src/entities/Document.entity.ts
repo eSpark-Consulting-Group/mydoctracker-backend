@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Users } from './User.entity';
 import { DeviceInventory } from './DeviceInventory.entity';
@@ -18,8 +19,9 @@ export class Document {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => DeviceInventory, (device) => device.id)
-  trackerId: DeviceInventory;
+  @OneToOne(() => DeviceInventory, { cascade: true })
+  @JoinColumn()
+  tracker: DeviceInventory;
 
   @Column({ type: 'enum', enum: DocumentType })
   type: DocumentType;
@@ -33,23 +35,26 @@ export class Document {
   @Column()
   file: string;
 
-  @Column()
+  @Column({ default: true })
   enabled: boolean;
 
-  @Column()
+  @Column({ default: '6hr' })
   idleStateInterval: string;
 
-  @Column()
+  @Column({ default: '5m' })
   mobileStateInterval: string;
 
-  @Column()
+  @Column({ default: true })
   active: boolean;
 
   @ManyToOne(() => Users, (user) => user.id)
   assignee: Users;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', default: null })
   meta: Meta;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 }
 
 export interface Meta {

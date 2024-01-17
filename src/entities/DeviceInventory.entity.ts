@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Admin } from './Admin.entity';
+import { Document } from './Document.entity';
 
 @Entity()
 export class DeviceInventory {
@@ -14,4 +15,7 @@ export class DeviceInventory {
 
   @ManyToOne(() => Admin, (admin) => admin.id)
   addedBy: Admin;
+
+  @OneToOne(() => Document, (document) => document.assignee)
+  document: Document;
 }
