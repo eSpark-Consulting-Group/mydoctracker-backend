@@ -1,0 +1,165 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { DocumentService } from './document.service';
+import { ErrorResponseBody } from 'src/utils/APIResponse';
+import { CurrentUser } from 'src/utils/decorators/current-user';
+import { Users } from 'src/entities/User.entity';
+import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
+import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
+import { imageFileInterceptor } from 'src/utils/helpers/interceptors/file.upload2';
+
+@ApiTags('Document')
+@Controller('document')
+export class DcoumentController {
+  constructor(private documentService: DocumentService) {}
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Add a Document',
+  })
+  @UseGuards(JwtGuard)
+  @Post('/')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: '',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(imageFileInterceptor)
+  async addDocument(
+    @UploadedFiles()
+    file: {
+      file: any;
+    },
+    @Body() reqData: AddDocumentDTO,
+    @CurrentUser() user: Users,
+  ) {
+    const data = await this.documentService.addDocument(
+      user,
+      reqData,
+      file?.file,
+    );
+    return {
+      status: 'success',
+      message: 'Document has been created successfully!',
+      data,
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get Document history',
+  })
+  @UseGuards(JwtGuard)
+  @Delete('/history/:id')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: '',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
+  async getDocumentHistory(
+    @CurrentUser() user: Users,
+    @Param() id: { id: string },
+  ) {
+    const data = await this.documentService.getDocumentHistory(user, id.id);
+    return {
+      status: 'success',
+      message: 'Document has been fetched successfully!',
+      data
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Edit a Document',
+  })
+  @UseGuards(JwtGuard)
+  @Put('/:id')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: '',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(imageFileInterceptor)
+  async editDocument(
+    @UploadedFiles()
+    file: {
+      file: any;
+    },
+    @Body() reqData: EditDocumentDTO,
+    @CurrentUser() user: Users,
+    @Param() id: { id: string },
+  ) {
+    const data = await this.documentService.editDocument(
+      user,
+      reqData,
+      file?.file,
+      id.id,
+    );
+    return {
+      status: 'success',
+      message: 'Document has been edited successfully!',
+      data,
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete a Document',
+  })
+  @UseGuards(JwtGuard)
+  @Delete('/:id')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: '',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
+  async deleteDocument(
+    @CurrentUser() user: Users,
+    @Param() id: { id: string },
+  ) {
+    await this.documentService.deleteDocument(user, id.id);
+    return {
+      status: 'success',
+      message: 'Document has been deleted successfully!',
+    };
+  }
+}

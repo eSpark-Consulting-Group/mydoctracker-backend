@@ -18,7 +18,7 @@ export class DocumentHistory {
   @Column()
   file: string;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', default: null })
   meta: Meta;
 
   @ManyToOne(() => Document, (document) => document.id)
