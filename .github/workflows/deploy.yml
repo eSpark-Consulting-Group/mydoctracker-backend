@@ -27,7 +27,8 @@ jobs:
       SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID: ${{ secrets.SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID }}
       B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
       B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
-      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      MONGODB_URI: mongodb+srv://noumanfatta:YHP0uwfADgQz6dzE@espark.3jr5vdw.mongodb.net/?retryWrites=true&w=majority
+
     steps:
       - uses: actions/checkout@v3
 
