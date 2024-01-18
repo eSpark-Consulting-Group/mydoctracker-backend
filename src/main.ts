@@ -29,7 +29,22 @@ async function bootstrap() {
     credentials: true,
   });
   await app.listen(process.env.PORT);
-  console.log(`App running on port ${process.env.PORT}`);
-  console.log(`App running on port ${process.env.MONGODB_URI}`);
+  console.log(`PORT=${process.env.PORT}`);
+  console.log(`MYSQL_HOST=${process.env.MYSQL_HOST}`);
+  console.log(`MYSQL_USER=${process.env.MYSQL_USER}`);
+  console.log(`MYSQL_PASSWORD=${process.env.MYSQL_PASSWORD}`);
+  console.log(`MYSQL_DATABASE=${process.env.MYSQL_DATABASE}`);
+  console.log(`MYSQL_PORT=${process.env.MYSQL_PORT}`);
+  console.log(`JWT_SECRET=${process.env.JWT_SECRET}`);
+  console.log(`JWT_EXPIRE=${process.env.JWT_EXPIRE}`);
+  console.log(`BUCKET_ID=${process.env.BUCKET_ID}`);
+  console.log(`API_KEY=${process.env.API_KEY}`);
+  console.log(`sendgrid_sender_email=${process.env.sendgrid_sender_email}`);
+  console.log(`SENDGRID_API_KEY=${process.env.SENDGRID_API_KEY}`);
+  console.log(`SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID=${process.env.SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID}`);
+  console.log(`B2_APPLICATION_KEY_ID=${process.env.B2_APPLICATION_KEY_ID}`);
+  console.log(`B2_APPLICATION_KEY=${process.env.B2_APPLICATION_KEY}`);
+  console.log(`ENDPOINT=${process.env.ENDPOINT}`);
+  console.log(`MONGODB_URI=${process.env.MONGODB_URI}`);
 }
 bootstrap();
