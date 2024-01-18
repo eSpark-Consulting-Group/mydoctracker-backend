@@ -10,6 +10,7 @@ import {
   DeviceTelemetrySchema,
   DeviceTelemtry,
 } from 'src/mongodb/schemas/device_telemetry.entity';
+import { Admin } from 'src/entities/Admin.entity';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import {
     MongooseModule.forFeature([
       { name: DeviceTelemtry.name, schema: DeviceTelemetrySchema },
     ]),
-    TypeOrmModule.forFeature([DeviceInventory]),
+    TypeOrmModule.forFeature([DeviceInventory, Admin]),
   ],
   controllers: [DeviceController],
   providers: [DeviceService, MongoDBService],

@@ -16,12 +16,9 @@ import { DocumentModule } from './document/document.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(
-      'mongodb+srv://noumanfatta:YHP0uwfADgQz6dzE@espark.3jr5vdw.mongodb.net/?retryWrites=true&w=majority',
-      {
-        dbName: 'mydoctracker_dev',
-      },
-    ),
+    MongooseModule.forRoot('mongodb+srv://noumanfatta:<password>@espark.3jr5vdw.mongodb.net/?retryWrites=true&w=majority', {
+      dbName: 'mydoctracker_dev',
+    }),
     TypeOrmModule.forRoot(dataSourceOptions),
     AuthModule,
     UsersModule,

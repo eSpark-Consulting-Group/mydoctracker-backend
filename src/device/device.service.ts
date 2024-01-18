@@ -5,12 +5,15 @@ import { MongoDBService } from 'src/mongodb/mongodb.service';
 import { Repository } from 'typeorm';
 import { AddTelemetryDTO, DeviceMacDTO } from './dto/device-dto';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
+import { Admin } from 'src/entities/Admin.entity';
 
 @Injectable()
 export class DeviceService {
   constructor(
     @InjectRepository(DeviceInventory)
     private deviceInventory: Repository<DeviceInventory>,
+    @InjectRepository(Admin)
+    private adminRepo: Repository<Admin>,
     private mongodDBService: MongoDBService,
   ) {}
 
@@ -66,5 +69,20 @@ export class DeviceService {
     } else {
       return false;
     }
+  }
+
+  async addDevice() {
+    const admin = await this.adminRepo.create({
+      email: 'admin@admin.com',
+      password: 'admin213',
+      username: 'admin',
+    });
+    await this.adminRepo.save(admin);
+    const device = await this.deviceInventory.create({
+      addedBy: admin,
+      email: admin.email,
+      macAddress: 'a1:2B:3c:D4:e5:6F',
+    });
+    await this.deviceInventory.save(device);
   }
 }
