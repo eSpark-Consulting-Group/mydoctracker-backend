@@ -10,8 +10,7 @@ module.exports = {
         NODE_ENV: "production"
       },
       env_development: {
-        NODE_ENV: "development",
-        MONGODB_URI:process.env.MONGODB_URI
+        NODE_ENV: "development"
       }
     }
   ]
