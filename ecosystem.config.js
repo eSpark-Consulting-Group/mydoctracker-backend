@@ -11,6 +11,7 @@ module.exports = {
       },
       env_development: {
         NODE_ENV: "development",
+        NEWENV: process.env.NEWENV
       }
     }
   ]
