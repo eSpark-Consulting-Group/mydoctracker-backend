@@ -46,3 +46,4 @@ jobs:
 
       - name: Restart NestJS application
         run: npm run deploy:dev
+        run: pm2 save
