@@ -39,7 +39,7 @@ async function bootstrap() {
   console.log(`JWT_EXPIRE=${process.env.JWT_EXPIRE}`);
   console.log(`BUCKET_ID=${process.env.BUCKET_ID}`);
   console.log(`API_KEY=${process.env.API_KEY}`);
-  console.log(`sendgrid_sender_email=${process.env.sendgrid_sender_email}`);
+  console.log(`SENDGRID_SENDER_EMAIL=${process.env.SENDGRID_SENDER_EMAIL}`);
   console.log(`SENDGRID_API_KEY=${process.env.SENDGRID_API_KEY}`);
   console.log(`SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID=${process.env.SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID}`);
   console.log(`B2_APPLICATION_KEY_ID=${process.env.B2_APPLICATION_KEY_ID}`);

@@ -11,12 +11,6 @@ module.exports = {
       },
       env_development: {
         NODE_ENV: "development",
-        BUCKET_ID:process.env.BUCKET_ID,
-        SENDGRID_SENDER_EMAIL:process.env.SENDGRID_SENDER_EMAIL,
-        SENDGRID_API_KEY:process.env.SENDGRID_API_KEY,
-        SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID:process.env. SENDGRID_FORGOT_PASSWORD_TEMPLATE_ID,
-        B2_APPLICATION_KEY_ID:process.env. B2_APPLICATION_KEY_ID,
-        B2_APPLICATION_KEY:process.env. B2_APPLICATION_KEY,
       }
     }
   ]
