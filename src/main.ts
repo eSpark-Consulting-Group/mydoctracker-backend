@@ -30,6 +30,11 @@ async function bootstrap() {
   });
   await app.listen(process.env.PORT);
   console.log(`App running on port ${process.env.PORT}`);
-  console.log("MONGODDB_URI=",process.env.MONGODB_URI)
+  console.log(
+    'MONGODDB_URI=',
+    process.env.MONGODB_URI,
+    process.env.B2_APPLICATION_KEY,
+  );
+  console.log('MONGODDB_URI=', process.env);
 }
 bootstrap();
