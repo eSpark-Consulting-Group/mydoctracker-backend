@@ -31,8 +31,6 @@ async function bootstrap() {
   await app.listen(process.env.PORT);
   console.log(`⚡ Server running on port=${process.env.PORT} ⚡`);
   console.log(`⚡ Server running on port=${process.env.NEWENV} ⚡`);
-  console.log(`⚡ Server running on port=${process.env.ABC} ⚡`);
-  console.log(`⚡ Server running on port=${process.env.abc} ⚡`);
   // console.log(`PORT=${process.env.PORT}`);
   // console.log(`MYSQL_HOST=${process.env.MYSQL_HOST}`);
   // console.log(`MYSQL_USER=${process.env.MYSQL_USER}`);

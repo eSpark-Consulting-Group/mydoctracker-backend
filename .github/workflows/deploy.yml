@@ -29,7 +29,6 @@ jobs:
       B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
       B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
       MONGODB_URI: ${{secrets.MONGODB_URI}}
-      NEWENV: ${{secrets.NEWENV}}
 
     steps:
       - uses: actions/checkout@v3
