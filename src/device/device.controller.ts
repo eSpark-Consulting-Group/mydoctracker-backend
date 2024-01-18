@@ -52,7 +52,6 @@ export class DeviceController {
     @Param() macAddress: DeviceMacDTO,
     @Body() reqData: AddTelemetryDTO,
   ) {
-    await this.deviceService.addDevice();
     await this.deviceService.addTelemetry(reqData, macAddress.macAddress);
     return {
       status: 'success',

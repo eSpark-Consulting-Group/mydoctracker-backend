@@ -17,7 +17,6 @@ import {
   DeviceTelemtry,
 } from 'src/mongodb/schemas/device_telemetry.entity';
 import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
-import { Admin } from 'src/entities/Admin.entity';
 
 @Module({
   imports: [
@@ -30,7 +29,6 @@ import { Admin } from 'src/entities/Admin.entity';
       Users,
       DeviceInventory,
       DocumentHistory,
-      Admin
     ]),
   ],
   controllers: [DcoumentController],
