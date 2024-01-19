@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   Post,
@@ -70,10 +71,33 @@ export class DcoumentController {
 
   @ApiBearerAuth()
   @ApiOperation({
+    summary: 'Get OTP for adding a  Document',
+  })
+  @UseGuards(JwtGuard)
+  @Get('otp')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: '',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  async generateOTP(@CurrentUser() user: Users) {
+    await this.documentService.generateOTPForAddDoc(user);
+    return {
+      status: 'success',
+      message: 'OTP has been sent to your email address!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
     summary: 'Get Document history',
   })
   @UseGuards(JwtGuard)
-  @Delete('/history/:id')
+  @Get('/history/:id')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
@@ -92,7 +116,7 @@ export class DcoumentController {
     return {
       status: 'success',
       message: 'Document has been fetched successfully!',
-      data
+      data,
     };
   }
 

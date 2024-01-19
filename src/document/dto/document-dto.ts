@@ -1,11 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsDate,
   IsDateString,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
 } from 'class-validator';
 import { DocumentType } from 'src/entities/Document.entity';
 
@@ -47,6 +51,18 @@ export class AddDocumentDTO {
     format: 'binary',
   })
   readonly file: File;
+
+  @ApiProperty({
+    type: String,
+    example: 4013,
+  })
+  @Transform(({ value }) => {
+    return Number(value);
+  })
+  @IsNumber()
+  @Min(1000)
+  @Max(9999)
+  readonly otp: number;
 }
 export class EditDocumentDTO {
   @ApiProperty({

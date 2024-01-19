@@ -212,7 +212,7 @@ export class UsersService {
 
     user.reset_token = token;
     const reset_link = `${host}?token=${token}`
-    await this.sendGridClient.SendForgotPasswordEmail(user.email, user.username, reset_link);
+    await this.sendGridClient.sendForgotPasswordEmail(user.email, user.username, reset_link);
     await this.userRepositry.save(user);
   }
 

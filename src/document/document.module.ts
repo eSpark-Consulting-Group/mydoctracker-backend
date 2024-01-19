@@ -17,6 +17,8 @@ import {
   DeviceTelemtry,
 } from 'src/mongodb/schemas/device_telemetry.entity';
 import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
+import { OTPService } from 'src/otp/otp.service';
+import { OTP } from 'src/entities/otp.entity';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
       Users,
       DeviceInventory,
       DocumentHistory,
+      OTP
     ]),
   ],
   controllers: [DcoumentController],
@@ -39,6 +42,7 @@ import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
     EmailService,
     DeviceService,
     MongoDBService,
+    OTPService,
   ],
   exports: [DocumentService],
 })
