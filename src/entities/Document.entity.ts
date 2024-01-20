@@ -58,12 +58,23 @@ export class Document {
 }
 
 export interface Meta {
-  batteryPercentage: number;
-  geofences: [{ name: string; geofence: any }];
-  fields: [
+  batteryPercentage?: number;
+  geofences?: [
+    {
+      id: string;
+      name: string;
+      geofence: Geofence[];
+    },
+  ];
+  fields?: [
     {
       name: string;
       value: string;
     },
   ];
+}
+
+export interface Geofence {
+  lat: number;
+  lng: number;
 }
