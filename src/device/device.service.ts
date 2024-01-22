@@ -170,4 +170,20 @@ export class DeviceService {
     }
     await this.documentRespositry.save(document);
   }
+
+  async getDeviceInfo(macAddress: string) {
+    const tracker = await this.checkDeviceByMac(macAddress);
+    const document = await this.documentRespositry.findOne({
+      where: { tracker },
+    });
+    let documentData;
+    if (document) {
+      documentData = {
+        geofences: document.meta?.geofences,
+        idleStateInterval: document.idleStateInterval,
+        mobileStateInterval: document.mobileStateInterval,
+      };
+    }
+    return { document: documentData, device: tracker };
+  }
 }
