@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceInventory } from 'src/entities/DeviceInventory.entity';
 import { MongoDBService } from 'src/mongodb/mongodb.service';
@@ -16,8 +12,6 @@ import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
 import { Users } from 'src/entities/User.entity';
 import { Document } from 'src/entities/Document.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { Admin } from 'src/entities/Admin.entity';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class DeviceService {
@@ -26,8 +20,6 @@ export class DeviceService {
     private deviceInventory: Repository<DeviceInventory>,
     @InjectRepository(Document)
     private documentRespositry: Repository<Document>,
-    @InjectRepository(Admin)
-    private adminRespositry: Repository<Admin>,
     private mongodDBService: MongoDBService,
   ) {}
 
@@ -193,54 +185,5 @@ export class DeviceService {
       };
     }
     return { document: documentData, device: tracker };
-  }
-
-  private hashPassword(password: string) {
-    const salt = bcrypt.genSaltSync(5);
-    const hashedPassowrd: string = bcrypt.hashSync(password, salt);
-    return hashedPassowrd;
-  }
-
-  async addFakeDevice(macAddress: string) {
-    let admin: Admin;
-    const foundDevice = await this.deviceInventory.findOne({
-      where: { macAddress: macAddress },
-    });
-    if (foundDevice) {
-      throw new BadRequestException(
-        `Device alread exists with this macAdress!`,
-      );
-    }
-    const email = 'admin@admin.com';
-    admin = await this.adminRespositry.findOne({
-      where: { email },
-    });
-    if (!admin) {
-      const newAdmin = this.adminRespositry.create({
-        email,
-        password: this.hashPassword('admin123'),
-        username: 'admin',
-      });
-      admin = await this.adminRespositry.save(newAdmin);
-    }
-    const device = this.deviceInventory.create({
-      addedBy: admin,
-      email,
-      macAddress,
-    });
-    await this.deviceInventory.save(device);
-    setInterval(async () => {
-      console.log(
-        `adding telemetry for deviceId: ${device.id} and macAdress = ${macAddress}`,
-      );
-      const telemetryData = {
-        lat: 90,
-        lng: 180,
-        state: DeviceStates.idle,
-        nextUpdateAt: Math.floor((Date.now() + 60000 * 5) / 1000),
-        sentAt: Date.now(),
-      };
-      await this.addTelemetry(telemetryData, macAddress);
-    }, 300000);
   }
 }

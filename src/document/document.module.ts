@@ -19,7 +19,6 @@ import {
 import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
 import { OTPService } from 'src/otp/otp.service';
 import { OTP } from 'src/entities/otp.entity';
-import { Admin } from 'src/entities/Admin.entity';
 
 @Module({
   imports: [
@@ -32,8 +31,7 @@ import { Admin } from 'src/entities/Admin.entity';
       Users,
       DeviceInventory,
       DocumentHistory,
-      OTP,
-      Admin,
+      OTP
     ]),
   ],
   controllers: [DcoumentController],
