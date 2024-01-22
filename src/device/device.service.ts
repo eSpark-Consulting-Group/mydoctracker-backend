@@ -11,6 +11,7 @@ import {
   AddTelemetryDTO,
   AddGeofenceDTO,
   EditGeofenceDTO,
+  FakeDeviceDTO,
 } from './dto/device-dto';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
 import { Users } from 'src/entities/User.entity';
@@ -184,6 +185,7 @@ export class DeviceService {
   }
 
   async getDeviceInfo(macAddress: string) {
+    await this.checkDeviceByMac(macAddress);
     const document = await this.documentRespositry
       .createQueryBuilder('document')
       .innerJoin('document.tracker', 'tracker')
@@ -208,14 +210,49 @@ export class DeviceService {
     return hashedPassowrd;
   }
 
-  async addFakeDevice(macAddress: string) {
+  private async deviceTelemetryRunner(
+    macAddress: string,
+    device: DeviceInventory,
+    state: DeviceStates,
+  ) {
+    const { idleStateInterval, mobileStateInterval } =
+      await this.getDeviceInfo(macAddress);
+    console.log(
+      `Adding telemetry for device id = ${device.id} & macAddress = ${macAddress}`,
+    );
+    const telemetryData = {
+      lat: 90,
+      lng: 180,
+      state: DeviceStates.idle,
+      nextUpdateAt: Math.floor((Date.now() + 60000 * 5) / 1000),
+      sentAt: Date.now(),
+    };
+    let interval = 60000;
+    if (state === DeviceStates.idle) {
+      interval = interval * idleStateInterval;
+    } else {
+      const lat = Math.floor(Math.random() * (90 - -90 + 1) - 90);
+      const lng = Math.floor(Math.random() * (180 - -180 + 1) - 180);
+      telemetryData.state = DeviceStates.moving;
+      telemetryData.lat = lat;
+      telemetryData.lng = lng;
+      interval = interval * mobileStateInterval;
+    }
+    await this.addTelemetry(telemetryData, macAddress);
+    setTimeout(
+      () => this.deviceTelemetryRunner(macAddress, device, state),
+      interval,
+    );
+  }
+
+  async addFakeDevice(macAddress: string, deviceData: FakeDeviceDTO) {
     let admin: Admin;
     const foundDevice = await this.deviceInventory.findOne({
       where: { macAddress: macAddress },
     });
     if (foundDevice) {
       throw new BadRequestException(
-        `Device alread exists with this macAdress!`,
+        `Device already exists with this macAdress!`,
       );
     }
     const email = 'admin@admin.com';
@@ -236,18 +273,6 @@ export class DeviceService {
       macAddress,
     });
     await this.deviceInventory.save(device);
-    setInterval(async () => {
-      console.log(
-        `adding telemetry for deviceId: ${device.id} and macAdress = ${macAddress}`,
-      );
-      const telemetryData = {
-        lat: 90,
-        lng: 180,
-        state: DeviceStates.idle,
-        nextUpdateAt: Math.floor((Date.now() + 60000 * 5) / 1000),
-        sentAt: Date.now(),
-      };
-      await this.addTelemetry(telemetryData, macAddress);
-    }, 300000);
+    this.deviceTelemetryRunner(macAddress, device, deviceData.state);
   }
 }

@@ -122,3 +122,14 @@ export class EditGeofenceDTO {
   @IsArrayOfObjects()
   geofence: GeofencePoint[];
 }
+
+export class FakeDeviceDTO {
+  @ApiProperty({
+    type: String,
+    example: DeviceStates.idle,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEnum(DeviceStates)
+  readonly state: DeviceStates;
+}

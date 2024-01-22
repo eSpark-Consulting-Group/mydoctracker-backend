@@ -37,6 +37,7 @@ import {
   DeviceMacDTO,
   AddGeofenceDTO,
   EditGeofenceDTO,
+  FakeDeviceDTO,
 } from './dto/device-dto';
 import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
@@ -62,8 +63,11 @@ export class DeviceController {
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  async addFakeDevice(@Param() params: DeviceMacDTO) {
-    await this.deviceService.addFakeDevice(params.macAddress);
+  async addFakeDevice(
+    @Param() params: DeviceMacDTO,
+    @Body() reqData: FakeDeviceDTO,
+  ) {
+    await this.deviceService.addFakeDevice(params.macAddress, reqData);
     return {
       status: 'success',
       message: 'Fake Device has been added!',
