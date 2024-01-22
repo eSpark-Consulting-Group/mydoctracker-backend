@@ -14,7 +14,11 @@ import {
 } from './dto/device-dto';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
 import { Users } from 'src/entities/User.entity';
-import { Document } from 'src/entities/Document.entity';
+import {
+  Document,
+  IdleStateIntervals,
+  MobileStateIntervals,
+} from 'src/entities/Document.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Admin } from 'src/entities/Admin.entity';
 import * as bcrypt from 'bcrypt';
@@ -180,19 +184,23 @@ export class DeviceService {
   }
 
   async getDeviceInfo(macAddress: string) {
-    const tracker = await this.checkDeviceByMac(macAddress);
-    const document = await this.documentRespositry.findOne({
-      where: { tracker },
-    });
-    let documentData;
-    if (document) {
-      documentData = {
-        geofences: document.meta?.geofences,
-        idleStateInterval: document.idleStateInterval,
-        mobileStateInterval: document.mobileStateInterval,
-      };
+    const document = await this.documentRespositry
+      .createQueryBuilder('document')
+      .innerJoin('document.tracker', 'tracker')
+      .where('tracker.macAddress = :macAddress', { macAddress })
+      .getOne();
+    const documentData = {
+      geofences: [],
+      idleStateInterval: IdleStateIntervals.SIX_HOURS,
+      mobileStateInterval: MobileStateIntervals.FIVE_MINUTES,
+    };
+    if (!document) {
+      return documentData;
     }
-    return { document: documentData, device: tracker };
+    documentData.geofences = document.meta?.geofences || [];
+    documentData.idleStateInterval = document.idleStateInterval;
+    documentData.mobileStateInterval = document.mobileStateInterval;
+    return documentData;
   }
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);

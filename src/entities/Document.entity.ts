@@ -17,7 +17,6 @@ export enum DocumentType {
 export enum IdleStateIntervals {
   SIX_HOURS = 360,
 }
-
 export enum MobileStateIntervals {
   FIVE_MINUTES = 5,
 }

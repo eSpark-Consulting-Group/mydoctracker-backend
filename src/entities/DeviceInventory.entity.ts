@@ -15,7 +15,4 @@ export class DeviceInventory {
 
   @ManyToOne(() => Admin, (admin) => admin.id)
   addedBy: Admin;
-
-  @OneToOne(() => Document, (document) => document.assignee)
-  document: Document;
 }
