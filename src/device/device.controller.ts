@@ -77,6 +77,34 @@ export class DeviceController {
     };
   }
 
+  @ApiSecurity('key')
+  @ApiOperation({
+    summary: 'Get device info using macAdress',
+  })
+  @UseGuards(ApiKeyAuthGuard)
+  @Post(':macAddress/info')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: AddTelemetryResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Not found',
+    type: DeviceNotFoundResponseBody,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  async getDeviceInfo(@Param() params: DeviceMacDTO) {
+    const data = await this.deviceService.getDeviceInfo(params.macAddress);
+    return {
+      data,
+      status: 'success',
+      message: 'Device has been fetched!',
+    };
+  }
+
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Create geofence for device using Document ID',

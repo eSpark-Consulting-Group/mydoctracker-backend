@@ -10,7 +10,11 @@ import {
 } from './dto/device-dto';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
 import { Users } from 'src/entities/User.entity';
-import { Document } from 'src/entities/Document.entity';
+import {
+  Document,
+  IdleStateIntervals,
+  MobileStateIntervals,
+} from 'src/entities/Document.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -169,5 +173,25 @@ export class DeviceService {
       document.meta.geofences.splice(index, 1);
     }
     await this.documentRespositry.save(document);
+  }
+
+  async getDeviceInfo(macAddress: string) {
+    const document = await this.documentRespositry
+      .createQueryBuilder('document')
+      .innerJoin('document.tracker', 'tracker')
+      .where('tracker.macAddress = :macAddress', { macAddress })
+      .getOne();
+    const documentData = {
+      geofences: [],
+      idleStateInterval: IdleStateIntervals.SIX_HOURS,
+      mobileStateInterval: MobileStateIntervals.FIVE_MINUTES,
+    };
+    if (!document) {
+      return documentData;
+    }
+    documentData.geofences = document.meta?.geofences || [];
+    documentData.idleStateInterval = document.idleStateInterval;
+    documentData.mobileStateInterval = document.mobileStateInterval;
+    return documentData;
   }
 }
