@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   HttpCode,
   Param,
   Post,
@@ -43,43 +44,59 @@ import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/User.entity';
+import { DeviceAuthGuard } from 'src/auth/guard/device-auth-guard';
+import { CurrentDevice } from 'src/utils/decorators/current-device';
+import { DeviceInventory } from 'src/entities/DeviceInventory.entity';
 
 @ApiTags('Device')
 @Controller('device')
 export class DeviceController {
   constructor(private deviceService: DeviceService) {}
-  @ApiSecurity('key')
   @ApiOperation({
-    summary: 'Create a fake device',
+    summary: 'Get All Firwares List',
   })
-  @UseGuards(ApiKeyAuthGuard)
-  @Post('fake/:macAddress')
+  @Get('firmware/list')
   @HttpCode(200)
-  @ApiNotFoundResponse({
-    description: 'Not found',
-    type: DeviceNotFoundResponseBody,
-  })
   @ApiInternalServerErrorResponse({
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  async addFakeDevice(
-    @Param() params: DeviceMacDTO,
-    @Body() reqData: FakeDeviceDTO,
-  ) {
-    await this.deviceService.addFakeDevice(params.macAddress, reqData);
+  async getFirmwaresList() {
+    const data = await this.deviceService.getFirmwaresList();
     return {
+      data,
       status: 'success',
-      message: 'Fake Device has been added!',
+      message: 'Latest firmware has been fetched!',
     };
   }
 
   @ApiSecurity('key')
   @ApiOperation({
+    summary: 'Get Latest Firware Version',
+  })
+  @UseGuards(ApiKeyAuthGuard, DeviceAuthGuard)
+  @Get('firmware/latest')
+  @HttpCode(200)
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  async getLatestFirmware(@Headers() headers: DeviceMacDTO) {
+    const data = await this.deviceService.getLatestFirmware();
+    return {
+      data,
+      status: 'success',
+      message: 'Latest firmware has been fetched!',
+    };
+  }
+  
+
+  @ApiSecurity('key')
+  @ApiOperation({
     summary: 'Send device telemetry',
   })
-  @UseGuards(ApiKeyAuthGuard)
-  @Post('telemetry/:macAddress')
+  @UseGuards(ApiKeyAuthGuard, DeviceAuthGuard)
+  @Post('telemetry')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
@@ -94,10 +111,11 @@ export class DeviceController {
     type: ErrorResponseBody,
   })
   async addTelemetry(
-    @Param() macAddress: DeviceMacDTO,
     @Body() reqData: AddTelemetryDTO,
+    @CurrentDevice() device: DeviceInventory,
+    @Headers() headers: DeviceMacDTO,
   ) {
-    await this.deviceService.addTelemetry(reqData, macAddress.macAddress);
+    await this.deviceService.addTelemetry(reqData, device);
     return {
       status: 'success',
       message: 'Telemetry has been added!',
@@ -108,8 +126,8 @@ export class DeviceController {
   @ApiOperation({
     summary: 'Get device info using macAdress',
   })
-  @UseGuards(ApiKeyAuthGuard)
-  @Post(':macAddress/info')
+  @UseGuards(ApiKeyAuthGuard, DeviceAuthGuard)
+  @Post('info')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
@@ -123,12 +141,41 @@ export class DeviceController {
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  async getDeviceInfo(@Param() params: DeviceMacDTO) {
-    const data = await this.deviceService.getDeviceInfo(params.macAddress);
+  async getDeviceInfo(
+    @Headers() headers: DeviceMacDTO,
+    @CurrentDevice() device: DeviceInventory,
+  ) {
+    const data = await this.deviceService.getDeviceInfo(device);
     return {
       data,
       status: 'success',
       message: 'Device has been fetched!',
+    };
+  }
+
+  @ApiSecurity('key')
+  @ApiOperation({
+    summary: 'Create a fake device',
+  })
+  @UseGuards(ApiKeyAuthGuard)
+  @Post('fake/:macaddress')
+  @HttpCode(200)
+  @ApiNotFoundResponse({
+    description: 'Not found',
+    type: DeviceNotFoundResponseBody,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  async addFakeDevice(
+    @Param() param: DeviceMacDTO,
+    @Body() reqData: FakeDeviceDTO,
+  ) {
+    await this.deviceService.addFakeDevice(param.macaddress, reqData);
+    return {
+      status: 'success',
+      message: 'Fake Device has been added!',
     };
   }
 
