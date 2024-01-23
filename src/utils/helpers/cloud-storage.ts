@@ -36,7 +36,7 @@ export class CloudStorageService {
     return undefined;
   }
   async uploadDocumentFile(
-    file,
+    file: Express.Multer.File,
     user: Users,
     folderName: string,
   ): Promise<{ fileId: string; fileName: string }> {
