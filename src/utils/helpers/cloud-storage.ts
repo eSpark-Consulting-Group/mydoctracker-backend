@@ -57,6 +57,28 @@ export class CloudStorageService {
     }
     return undefined;
   }
+  async uploadBuildFile(
+    file: Express.Multer.File,
+    folderName: string,
+    fileName: string,
+  ): Promise<{ fileId: string; fileName: string }> {
+    await this.b2.authorize(); // must authorize first (authorization lasts 24 hrs)
+    const data = await this.b2.getUploadUrl({
+      bucketId: process.env.BUCKET_ID,
+    });
+    const parts = file.originalname.split('.');
+    const fileExtension = parts.pop();
+    const response = await this.b2.uploadFile({
+      uploadUrl: data.data.uploadUrl,
+      uploadAuthToken: data.data.authorizationToken,
+      fileName: `${folderName}/${fileName}.${fileExtension}`,
+      data: file.buffer,
+    });
+    if (response) {
+      return { fileId: response.data.fileId, fileName: response.data.fileName };
+    }
+    return undefined;
+  }
 
   async deleteFile(fileId: string): Promise<void> {
     try {

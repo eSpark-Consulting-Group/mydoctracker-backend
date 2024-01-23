@@ -10,6 +10,8 @@ import { DeviceModule } from './device/device.module';
 import { MongoDBModule } from './mongodb/mongodb.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DocumentModule } from './document/document.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { DocumentModule } from './document/document.module';
       dbName: 'mydoctracker_dev',
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
+    AdminModule,
     AuthModule,
     UsersModule,
     DeviceModule,

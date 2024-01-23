@@ -4,13 +4,16 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 export class Firmware {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  
+
   @Column({ type: 'text', nullable: false })
   build: string;
 
-  @Column()
+  @Column({ unique: true })
   version: string;
-  
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  timestamp: Date;
+
   @Column({ type: 'json', default: null })
   meta: Record<string, unknown>;
 }
