@@ -23,18 +23,12 @@ export class UsersService {
     private userRepositry: Repository<Users>,
     private jwtService: JwtService,
     private fileUploadService: CloudStorageService,
-    private readonly sendGridClient: EmailService
-  ) { }
+    private readonly sendGridClient: EmailService,
+  ) {}
   private hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
     return hashedPassowrd;
-  }
-  private reConstructUser(user: Users) {
-    delete user.hashedPassword;
-    delete user.employeePassword;
-    delete user.reset_token;
-    return user;
   }
   getUserById(id: string) {
     return this.userRepositry.findOne({
@@ -62,8 +56,7 @@ export class UsersService {
           expiresIn: process.env.JWT_EXPIRE,
         });
       }
-      this.reConstructUser(user)
-      return { ...user, token };
+      return { user, token };
     } catch (error) {
       if (error.errno === 1062) {
         const match = error?.sqlMessage?.match(/for key '(.*?)'/);
@@ -111,8 +104,7 @@ export class UsersService {
         expiresIn: process.env.JWT_EXPIRE,
       });
     }
-    this.reConstructUser(user)
-    return { ...user, token };
+    return { user, token };
   }
 
   async changePassword(
@@ -187,7 +179,7 @@ export class UsersService {
   }
 
   async forgotPassword(email: string, ip: string, device: any, host: string) {
-    const deviceInfo = `${device.type}, ${device.parser.useragent.os.family}, ${device.parser.useragent.family}`
+    const deviceInfo = `${device.type}, ${device.parser.useragent.os.family}, ${device.parser.useragent.family}`;
     const user = await this.userRepositry.findOne({
       where: { email },
     });
@@ -211,8 +203,12 @@ export class UsersService {
     });
 
     user.reset_token = token;
-    const reset_link = `${host}?token=${token}`
-    await this.sendGridClient.sendForgotPasswordEmail(user.email, user.username, reset_link);
+    const reset_link = `${host}?token=${token}`;
+    await this.sendGridClient.sendForgotPasswordEmail(
+      user.email,
+      user.username,
+      reset_link,
+    );
     await this.userRepositry.save(user);
   }
 
@@ -245,7 +241,6 @@ export class UsersService {
       user.email = userData.email || user.email;
       user.contact = userData.contact || user.contact;
       const updatedUser = await this.userRepositry.save(user);
-      this.reConstructUser(user)
       return updatedUser;
     } catch (error) {
       if (error.errno === 1062) {

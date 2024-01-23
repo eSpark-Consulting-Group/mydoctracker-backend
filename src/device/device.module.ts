@@ -10,6 +10,11 @@ import {
   DeviceTelemetrySchema,
   DeviceTelemtry,
 } from 'src/mongodb/schemas/device_telemetry.entity';
+import { Document } from 'src/entities/Document.entity';
+import { UsersService } from 'src/users/users.service';
+import { Users } from 'src/entities/User.entity';
+import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
+import { EmailService } from 'src/utils/helpers/email';
 
 @Module({
   imports: [
@@ -17,10 +22,16 @@ import {
     MongooseModule.forFeature([
       { name: DeviceTelemtry.name, schema: DeviceTelemetrySchema },
     ]),
-    TypeOrmModule.forFeature([DeviceInventory]),
+    TypeOrmModule.forFeature([DeviceInventory, Document, Users]),
   ],
   controllers: [DeviceController],
-  providers: [DeviceService, MongoDBService],
+  providers: [
+    DeviceService,
+    MongoDBService,
+    UsersService,
+    CloudStorageService,
+    EmailService,
+  ],
   exports: [DeviceService],
 })
 export class DeviceModule {}

@@ -3,16 +3,35 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceInventory } from 'src/entities/DeviceInventory.entity';
 import { MongoDBService } from 'src/mongodb/mongodb.service';
 import { Repository } from 'typeorm';
-import { AddTelemetryDTO } from './dto/device-dto';
+import {
+  AddTelemetryDTO,
+  AddGeofenceDTO,
+  EditGeofenceDTO,
+} from './dto/device-dto';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
+import { Users } from 'src/entities/User.entity';
+import { Document } from 'src/entities/Document.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class DeviceService {
   constructor(
     @InjectRepository(DeviceInventory)
     private deviceInventory: Repository<DeviceInventory>,
+    @InjectRepository(Document)
+    private documentRespositry: Repository<Document>,
     private mongodDBService: MongoDBService,
   ) {}
+
+  private async getCurrentUserDocument(assignee: Users, id: string) {
+    const document = await this.documentRespositry.findOne({
+      where: { id, assignee },
+    });
+    if (!document) {
+      throw new NotFoundException('Document not found!');
+    }
+    return document;
+  }
 
   async checkDeviceByMac(macAddress: string) {
     const foundDevice = await this.deviceInventory.findOne({
@@ -66,5 +85,89 @@ export class DeviceService {
     } else {
       return false;
     }
+  }
+
+  async createGeofence(
+    assignee: Users,
+    id: string,
+    geofenceData: AddGeofenceDTO,
+  ) {
+    const document = await this.getCurrentUserDocument(assignee, id);
+    const geofence = {
+      id: uuidv4(),
+      name: geofenceData.name,
+      geofence: geofenceData.geofence,
+    };
+    if (document.meta?.geofences) {
+      document.meta.geofences.push(geofence);
+    } else {
+      document.meta = {
+        geofences: [geofence],
+      };
+    }
+    await this.documentRespositry.save(document);
+    return geofence;
+  }
+
+  async editGeofence(
+    assignee: Users,
+    ids: { documentId: string; geofenceId: string },
+    geofenceData: EditGeofenceDTO,
+  ) {
+    const document = await this.getCurrentUserDocument(
+      assignee,
+      ids.documentId,
+    );
+    const geofence = document.meta?.geofences?.find(
+      (geo) => geo.id === ids.geofenceId,
+    );
+    if (!geofence) {
+      throw new NotFoundException('geofence not found!');
+    }
+    geofence.name = geofenceData.name || geofence.name;
+    geofence.geofence = geofenceData.geofence || geofence.geofence;
+    await this.documentRespositry.save(document);
+    return geofence;
+  }
+
+  async getAllGeofences(assignee: Users, id: string) {
+    const document = await this.getCurrentUserDocument(assignee, id);
+    return document.meta?.geofences || [];
+  }
+  async getGeofenceByID(
+    assignee: Users,
+    ids: { documentId: string; geofenceId: string },
+  ) {
+    const document = await this.getCurrentUserDocument(
+      assignee,
+      ids.documentId,
+    );
+    const geofence = document.meta?.geofences?.find(
+      (geo) => geo.id === ids.geofenceId,
+    );
+    if (!geofence) {
+      throw new NotFoundException('Geofence not found!');
+    }
+    return geofence;
+  }
+
+  async deleteGeofence(
+    assignee: Users,
+    ids: { documentId: string; geofenceId: string },
+  ) {
+    const document = await this.getCurrentUserDocument(
+      assignee,
+      ids.documentId,
+    );
+    const index = document.meta?.geofences?.findIndex(
+      (geo) => geo.id === ids.geofenceId,
+    );
+    if (index === undefined || index < 0) {
+      throw new NotFoundException('Geofence not found!');
+    }
+    if (index > -1) {
+      document.meta.geofences.splice(index, 1);
+    }
+    await this.documentRespositry.save(document);
   }
 }
