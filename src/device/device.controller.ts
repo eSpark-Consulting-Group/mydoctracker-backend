@@ -37,6 +37,7 @@ import {
   DeviceMacDTO,
   AddGeofenceDTO,
   EditGeofenceDTO,
+  FakeDeviceDTO,
 } from './dto/device-dto';
 import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
@@ -47,6 +48,32 @@ import { Users } from 'src/entities/User.entity';
 @Controller('device')
 export class DeviceController {
   constructor(private deviceService: DeviceService) {}
+  @ApiSecurity('key')
+  @ApiOperation({
+    summary: 'Create a fake device',
+  })
+  @UseGuards(ApiKeyAuthGuard)
+  @Post('fake/:macAddress')
+  @HttpCode(200)
+  @ApiNotFoundResponse({
+    description: 'Not found',
+    type: DeviceNotFoundResponseBody,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  async addFakeDevice(
+    @Param() params: DeviceMacDTO,
+    @Body() reqData: FakeDeviceDTO,
+  ) {
+    await this.deviceService.addFakeDevice(params.macAddress, reqData);
+    return {
+      status: 'success',
+      message: 'Fake Device has been added!',
+    };
+  }
+
   @ApiSecurity('key')
   @ApiOperation({
     summary: 'Send device telemetry',

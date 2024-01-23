@@ -45,7 +45,11 @@ export class DocumentService {
     return otp;
   }
 
-  async addDocument(user: Users, documentData: AddDocumentDTO, file: any) {
+  async addDocument(
+    user: Users,
+    documentData: AddDocumentDTO,
+    file: Express.Multer.File,
+  ) {
     const otpID = await this.otpService.verifyOTP(
       user,
       OtpPurpose.add_document,
@@ -66,15 +70,15 @@ export class DocumentService {
       tracker: device,
     });
     const document = await this.documentRepositry.save(newDocument);
-    if (file && file.length) {
+    if (file) {
       const response = await this.fileUploadService.uploadDocumentFile(
-        file[0],
+        file,
         user,
         S3_ENUMS.docs,
       );
       const fileName = `${S3_ENUMS.URL}/${response.fileName}`;
       document.file = fileName;
-      await this.documentRepositry.save(document)
+      await this.documentRepositry.save(document);
     }
     await this.otpService.deleteOtp(otpID);
     return document;
@@ -83,14 +87,14 @@ export class DocumentService {
   async editDocument(
     user: Users,
     documentData: EditDocumentDTO,
-    file: any,
+    file: Express.Multer.File,
     id: string,
   ) {
     const document = await this.getCurrentUserDoc(id, user);
     const fileName = document.file;
-    if (file && file.length) {
+    if (file) {
       const response = await this.fileUploadService.uploadDocumentFile(
-        file[0],
+        file,
         user,
         S3_ENUMS.docs,
       );
