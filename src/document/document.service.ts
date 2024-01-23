@@ -12,6 +12,9 @@ import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { S3_ENUMS } from 'enum';
 import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
+import { OTPService } from 'src/otp/otp.service';
+import { OtpPurpose } from 'src/entities/otp.entity';
+import { EmailService } from 'src/utils/helpers/email';
 
 @Injectable()
 export class DocumentService {
@@ -22,9 +25,32 @@ export class DocumentService {
     private documentHistoryRepositry: Repository<DocumentHistory>,
     private deviceService: DeviceService,
     private fileUploadService: CloudStorageService,
+    private otpService: OTPService,
+    private emailService: EmailService,
   ) {}
+  private async getCurrentUserDoc(id: string, assignee: Users) {
+    const document = await this.documentRepositry.findOne({
+      where: { id, assignee, isDeleted: false },
+    });
+    if (!document) {
+      throw new NotFoundException('Document not found');
+    }
+    return document;
+  }
+  async generateOTPForAddDoc(assignee: Users) {
+    const purpose = OtpPurpose.add_document;
+    const expiresAt = new Date(Date.now() + 60000);
+    const otp = await this.otpService.generatOTP(assignee, purpose, expiresAt);
+    await this.emailService.sendOtpEmail(assignee.email, otp.otp);
+    return otp;
+  }
 
   async addDocument(user: Users, documentData: AddDocumentDTO, file: any) {
+    const otpID = await this.otpService.verifyOTP(
+      user,
+      OtpPurpose.add_document,
+      documentData.otp,
+    );
     const device = await this.deviceService.getDeviceById(
       documentData.deviceId,
     );
@@ -32,23 +58,25 @@ export class DocumentService {
     if (!isActive) {
       throw new BadRequestException('Device is offline');
     }
-    let fileName = '';
+    const newDocument = this.documentRepositry.create({
+      assignee: user,
+      creationDate: documentData.creationDate,
+      file: '',
+      title: documentData.title,
+      tracker: device,
+    });
+    const document = await this.documentRepositry.save(newDocument);
     if (file && file.length) {
       const response = await this.fileUploadService.uploadDocumentFile(
         file[0],
         user,
         S3_ENUMS.docs,
       );
-      fileName = `${S3_ENUMS.URL}/${response.fileName}`;
+      const fileName = `${S3_ENUMS.URL}/${response.fileName}`;
+      document.file = fileName;
+      await this.documentRepositry.save(document)
     }
-    const newDevice = this.documentRepositry.create({
-      assignee: user,
-      creationDate: documentData.creationDate,
-      file: fileName,
-      title: documentData.title,
-      tracker: device,
-    });
-    const document = await this.documentRepositry.save(newDevice);
+    await this.otpService.deleteOtp(otpID);
     return document;
   }
 
@@ -58,12 +86,7 @@ export class DocumentService {
     file: any,
     id: string,
   ) {
-    const document = await this.documentRepositry.findOne({
-      where: { id, assignee: user, isDeleted: false },
-    });
-    if (!document) {
-      throw new NotFoundException('Document not found!');
-    }
+    const document = await this.getCurrentUserDoc(id, user);
     const fileName = document.file;
     if (file && file.length) {
       const response = await this.fileUploadService.uploadDocumentFile(
@@ -89,23 +112,13 @@ export class DocumentService {
   }
 
   async deleteDocument(assignee: Users, id: string) {
-    const document = await this.documentRepositry.findOne({
-      where: { id, assignee, isDeleted: false },
-    });
-    if (!document) {
-      throw new NotFoundException('Document not found!');
-    }
+    const document = await this.getCurrentUserDoc(id, assignee);
     document.isDeleted = true;
     await this.documentRepositry.save(document);
   }
 
   async getDocumentHistory(assignee: Users, id: string) {
-    const document = await this.documentRepositry.findOne({
-      where: { id, assignee, isDeleted: false },
-    });
-    if (!document) {
-      throw new NotFoundException('Document not found!');
-    }
+    const document = await this.getCurrentUserDoc(id, assignee);
     const history = await this.documentHistoryRepositry.find({
       where: { documentId: document },
     });

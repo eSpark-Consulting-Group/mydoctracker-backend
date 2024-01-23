@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceInventory } from 'src/entities/DeviceInventory.entity';
 import { MongoDBService } from 'src/mongodb/mongodb.service';
 import { Repository } from 'typeorm';
-import { AddTelemetryDTO, DeviceMacDTO } from './dto/device-dto';
+import { AddTelemetryDTO } from './dto/device-dto';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
 
 @Injectable()
