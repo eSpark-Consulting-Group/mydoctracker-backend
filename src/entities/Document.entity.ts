@@ -14,6 +14,13 @@ export enum DocumentType {
   MULTIPLE = 'MULTIPLE',
 }
 
+export enum IdleStateIntervals {
+  SIX_HOURS = 360,
+}
+export enum MobileStateIntervals {
+  FIVE_MINUTES = 5,
+}
+
 @Entity()
 export class Document {
   @PrimaryGeneratedColumn('uuid')
@@ -38,11 +45,11 @@ export class Document {
   @Column({ default: true })
   enabled: boolean;
 
-  @Column({ default: '6hr' })
-  idleStateInterval: string;
+  @Column({ default: IdleStateIntervals.SIX_HOURS })
+  idleStateInterval: number;
 
-  @Column({ default: '5m' })
-  mobileStateInterval: string;
+  @Column({ default: MobileStateIntervals.FIVE_MINUTES })
+  mobileStateInterval: number;
 
   @Column({ default: true })
   active: boolean;
@@ -58,12 +65,23 @@ export class Document {
 }
 
 export interface Meta {
-  batteryPercentage: number;
-  geofences: [{ name: string; geofence: any }];
-  fields: [
+  batteryPercentage?: number;
+  geofences?: [
+    {
+      id: string;
+      name: string;
+      geofence: Geofence[];
+    },
+  ];
+  fields?: [
     {
       name: string;
       value: string;
     },
   ];
+}
+
+export interface Geofence {
+  lat: number;
+  lng: number;
 }

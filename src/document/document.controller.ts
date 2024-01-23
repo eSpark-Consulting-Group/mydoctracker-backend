@@ -2,11 +2,14 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
+  HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   Post,
   Put,
-  UploadedFiles,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -25,7 +28,7 @@ import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/User.entity';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
-import { imageFileInterceptor } from 'src/utils/helpers/interceptors/file.upload2';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Document')
 @Controller('document')
@@ -47,20 +50,23 @@ export class DcoumentController {
     type: ErrorResponseBody,
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(imageFileInterceptor)
+  @UseInterceptors(FileInterceptor('file'))
   async addDocument(
-    @UploadedFiles()
-    file: {
-      file: any;
-    },
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^image\/(jpeg|jpg|png)$/,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          fileIsRequired: true,
+        }),
+    )
+    file: Express.Multer.File,
     @Body() reqData: AddDocumentDTO,
     @CurrentUser() user: Users,
   ) {
-    const data = await this.documentService.addDocument(
-      user,
-      reqData,
-      file?.file,
-    );
+    const data = await this.documentService.addDocument(user, reqData, file);
     return {
       status: 'success',
       message: 'Document has been created successfully!',
@@ -70,10 +76,33 @@ export class DcoumentController {
 
   @ApiBearerAuth()
   @ApiOperation({
+    summary: 'Get OTP for adding a  Document',
+  })
+  @UseGuards(JwtGuard)
+  @Get('otp')
+  @HttpCode(200)
+  @ApiOkResponse({
+    description: 'Successful response',
+    type: '',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  async generateOTP(@CurrentUser() user: Users) {
+    await this.documentService.generateOTPForAddDoc(user);
+    return {
+      status: 'success',
+      message: 'OTP has been sent to your email address!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
     summary: 'Get Document history',
   })
   @UseGuards(JwtGuard)
-  @Delete('/history/:id')
+  @Get('/history/:id')
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Successful response',
@@ -92,7 +121,7 @@ export class DcoumentController {
     return {
       status: 'success',
       message: 'Document has been fetched successfully!',
-      data
+      data,
     };
   }
 
@@ -113,12 +142,19 @@ export class DcoumentController {
   })
   @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(imageFileInterceptor)
+  @UseInterceptors(FileInterceptor('file'))
   async editDocument(
-    @UploadedFiles()
-    file: {
-      file: any;
-    },
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^image\/(jpeg|jpg|png)$/,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          fileIsRequired: false,
+        }),
+    )
+    file: Express.Multer.File,
     @Body() reqData: EditDocumentDTO,
     @CurrentUser() user: Users,
     @Param() id: { id: string },
@@ -126,7 +162,7 @@ export class DcoumentController {
     const data = await this.documentService.editDocument(
       user,
       reqData,
-      file?.file,
+      file,
       id.id,
     );
     return {
