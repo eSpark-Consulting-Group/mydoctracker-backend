@@ -155,7 +155,7 @@ export class UsersService {
         user.meta = { reset_history: [tokenData] };
       }
     } else if (oldPassword) {
-      const user = await this.userRepositry.findOne({
+      user = await this.userRepositry.findOne({
         where: { id: currentUser.id },
       });
       if (!user) {
