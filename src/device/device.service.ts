@@ -274,5 +274,6 @@ export class DeviceService {
     });
     await this.deviceInventory.save(device);
     this.deviceTelemetryRunner(macAddress, device, deviceData.state);
+    return { id: device.id };
   }
 }

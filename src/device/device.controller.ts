@@ -67,8 +67,12 @@ export class DeviceController {
     @Param() params: DeviceMacDTO,
     @Body() reqData: FakeDeviceDTO,
   ) {
-    await this.deviceService.addFakeDevice(params.macAddress, reqData);
+    const data = await this.deviceService.addFakeDevice(
+      params.macAddress,
+      reqData,
+    );
     return {
+      data,
       status: 'success',
       message: 'Fake Device has been added!',
     };
