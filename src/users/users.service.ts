@@ -155,7 +155,7 @@ export class UsersService {
         user.meta = { reset_history: [tokenData] };
       }
     } else if (oldPassword) {
-      const user = await this.userRepositry.findOne({
+      user = await this.userRepositry.findOne({
         where: { id: currentUser.id },
       });
       if (!user) {
@@ -214,7 +214,7 @@ export class UsersService {
 
   async updateProfile(
     userData: UpdateProfileDTO,
-    file: any,
+    file: Express.Multer.File,
     currentUser: Users,
   ) {
     try {
@@ -227,9 +227,9 @@ export class UsersService {
       if (user.status !== UserStatus.ACTIVE) {
         throw new UnauthorizedException(`Your account has been deactivated!`);
       }
-      if (file && file.length) {
+      if (file) {
         const response = await this.fileUploadService.uploadFileInS3(
-          file[0],
+          file,
           user,
           S3_ENUMS.profile_pictures,
         );

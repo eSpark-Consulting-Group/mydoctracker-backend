@@ -57,6 +57,7 @@ export class Users {
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
+  @Exclude()
   @Column({ type: 'json', default: null, nullable: true })
   meta: UserMeta;
 }
