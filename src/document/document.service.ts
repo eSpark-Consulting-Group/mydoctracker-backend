@@ -28,7 +28,7 @@ export class DocumentService {
     private otpService: OTPService,
     private emailService: EmailService,
   ) {}
-  private async getCurrentUserDoc(id: string, assignee: Users) {
+  async getCurrentUserDoc(id: string, assignee: Users) {
     const document = await this.documentRepositry.findOne({
       where: { id, assignee, isDeleted: false },
     });
@@ -69,6 +69,11 @@ export class DocumentService {
       title: documentData.title,
       tracker: device,
     });
+    if (documentData.fields) {
+      newDocument.meta = {
+        fields: JSON.parse(documentData.fields),
+      };
+    }
     const document = await this.documentRepositry.save(newDocument);
     if (file) {
       const response = await this.fileUploadService.uploadDocumentFile(
@@ -80,6 +85,16 @@ export class DocumentService {
       document.file = fileName;
       await this.documentRepositry.save(document);
     }
+    const documentHistory = this.documentHistoryRepositry.create({
+      type: document.type,
+      title: document.title,
+      creationDate: document.creationDate,
+      documentId: document.id,
+      file: document.file,
+      meta: document.meta,
+      document: document,
+    });
+    await this.documentHistoryRepositry.save(documentHistory);
     await this.otpService.deleteOtp(otpID);
     return document;
   }
@@ -100,16 +115,24 @@ export class DocumentService {
       );
       document.file = `${S3_ENUMS.URL}/${response.fileName}`;
     }
+    document.creationDate = documentData.creationDate || document.creationDate;
+    document.title = documentData.title || document.title;
+    document.type = documentData.type || document.type;
+    if (documentData.fields) {
+      document.meta = {
+        ...document.meta,
+        fields: JSON.parse(documentData.fields),
+      };
+    }
     const documentHistory = this.documentHistoryRepositry.create({
       type: document.type,
       title: document.title,
       creationDate: document.creationDate,
-      documentId: document,
+      documentId: document.id,
       file: fileName,
+      meta: document.meta,
+      document,
     });
-    document.creationDate = documentData.creationDate;
-    document.title = documentData.title;
-    document.type = documentData.type;
     await this.documentRepositry.save(document);
     await this.documentHistoryRepositry.save(documentHistory);
     return document;
@@ -122,10 +145,17 @@ export class DocumentService {
   }
 
   async getDocumentHistory(assignee: Users, id: string) {
-    const document = await this.getCurrentUserDoc(id, assignee);
+    await this.getCurrentUserDoc(id, assignee);
     const history = await this.documentHistoryRepositry.find({
-      where: { documentId: document },
+      where: { documentId: id },
+      order: { createdAt: 'DESC' },
     });
     return history;
+  }
+
+  geAllDocuments(assignee: Users) {
+    return this.documentRepositry.find({
+      where: { assignee, isDeleted: false, enabled: true },
+    });
   }
 }

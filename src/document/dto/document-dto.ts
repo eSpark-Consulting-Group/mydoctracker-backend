@@ -1,17 +1,34 @@
+import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsDate,
   IsDateString,
+  IsDefined,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Max,
   Min,
 } from 'class-validator';
-import { DocumentType } from 'src/entities/Document.entity';
+import { DocumentType } from 'enum';
+
+class FieldDto {
+  @ApiProperty({ example: 'fieldName', description: 'Name of the field' })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ example: 'fieldValue', description: 'Value of the field' })
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
 
 export class AddDocumentDTO {
   @ApiProperty({
@@ -51,6 +68,37 @@ export class AddDocumentDTO {
     format: 'binary',
   })
   readonly file: File;
+
+  @ApiProperty({
+    type: [FieldDto],
+    example: [{ name: 'fieldName', value: 'fieldValue' }],
+  })
+  @Transform(({ value }) => {
+    try {
+      const parsedValue = JSON.parse(value);
+      if (
+        Array.isArray(parsedValue) &&
+        parsedValue.every(
+          (item) =>
+            item &&
+            typeof item === 'object' &&
+            'name' in item &&
+            'value' in item,
+        )
+      ) {
+        return parsedValue as FieldDto[];
+      }
+      throw Error('Invalid array structure');
+    } catch (error) {
+      throw new BadRequestException(
+        'Invalid JSON array format for fields array',
+      );
+    }
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  fields?: string;
 
   @ApiProperty({
     type: String,
@@ -94,6 +142,39 @@ export class EditDocumentDTO {
   @IsDateString()
   @IsOptional()
   readonly creationDate: Date;
+
+  @ApiProperty({
+    type: [FieldDto],
+    example: [{ name: 'fieldName', value: 'fieldValue' }],
+    required: false,
+  })
+  @Transform(({ value }) => {
+    try {
+      const parsedValue = JSON.parse(value);
+      if (
+        Array.isArray(parsedValue) &&
+        parsedValue.every(
+          (item) =>
+            item &&
+            typeof item === 'object' &&
+            'name' in item &&
+            'value' in item &&
+            item.name &&
+            item.value,
+        )
+      ) {
+        return parsedValue as FieldDto[];
+      }
+      throw Error('Invalid array structure');
+    } catch (error) {
+      throw new BadRequestException(
+        'Invalid JSON array format for fields array',
+      );
+    }
+  })
+  @IsOptional()
+  @IsArray()
+  fields?: string;
 
   @ApiProperty({
     required: false,

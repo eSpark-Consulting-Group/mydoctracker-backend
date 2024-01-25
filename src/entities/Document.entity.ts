@@ -5,14 +5,13 @@ import {
   ManyToOne,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Users } from './User.entity';
 import { DeviceInventory } from './DeviceInventory.entity';
+import { DocumentHistory } from './DocumentHistory.entity';
+import { DocumentType } from 'enum';
 
-export enum DocumentType {
-  SINGLE = 'SINGLE',
-  MULTIPLE = 'MULTIPLE',
-}
 
 export enum IdleStateIntervals {
   SIX_HOURS = 360,
@@ -62,6 +61,9 @@ export class Document {
 
   @Column({ default: false })
   isDeleted: boolean;
+
+  @OneToMany(() => DocumentHistory, (history) => history.document)
+  history: DocumentHistory[];
 }
 
 export interface Meta {
@@ -73,12 +75,10 @@ export interface Meta {
       geofence: Geofence[];
     },
   ];
-  fields?: [
-    {
-      name: string;
-      value: string;
-    },
-  ];
+  fields?: {
+    name: string;
+    value: string;
+  }[];
 }
 
 export interface Geofence {

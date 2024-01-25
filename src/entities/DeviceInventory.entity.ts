@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Admin } from './Admin.entity';
-import { Document } from './Document.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class DeviceInventory {
@@ -10,6 +10,7 @@ export class DeviceInventory {
   @Column()
   email: string;
 
+  @Exclude()
   @Column({ unique: true, length: 17 })
   macAddress: string;
 

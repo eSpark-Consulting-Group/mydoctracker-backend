@@ -1,9 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Matches,
@@ -12,7 +15,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
-import { IsArrayOfObjects } from 'src/utils/decorators/array-objects';
 import { IsAfterNow } from 'src/utils/decorators/future-date';
 
 export class AddTelemetryDTO {
@@ -91,9 +93,11 @@ export class AddGeofenceDTO {
   @ApiProperty({
     example: [{ lat: 90, lng: 180 }],
   })
-  @IsArrayOfObjects()
+  @IsArray()
+  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => GeofencePoint)
+  @IsObject({ each: true })
   geofence: GeofencePoint[];
 }
 export class EditGeofenceDTO {
@@ -116,10 +120,12 @@ export class EditGeofenceDTO {
   @ApiProperty({
     example: [{ lat: 90, lng: 180 }],
   })
-  @IsOptional()
+ 
+  @IsArray()
+  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => GeofencePoint)
-  @IsArrayOfObjects()
+  @IsObject({ each: true })
   geofence: GeofencePoint[];
 }
 
