@@ -1,14 +1,17 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   ParseFilePipeBuilder,
+  ParseIntPipe,
   Post,
   Put,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -135,8 +138,14 @@ export class DcoumentController {
   async getDocumentHistory(
     @CurrentUser() user: Users,
     @Param() id: { id: string },
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(2), ParseIntPipe) limit: number = 2,
   ) {
-    const data = await this.documentService.getDocumentHistory(user, id.id);
+    limit = limit > 10 ? 10 : limit;
+    const data = await this.documentService.getDocumentHistory(user, id.id, {
+      page,
+      limit,
+    });
     return {
       status: 'success',
       message: 'Document history has been fetched successfully!',
