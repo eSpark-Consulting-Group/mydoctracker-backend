@@ -56,11 +56,11 @@ export class DocumentService {
     documentData: AddDocumentDTO,
     file: Express.Multer.File,
   ) {
-    // const otpID = await this.otpService.verifyOTP(
-    //   user,
-    //   OtpPurpose.add_document,
-    //   documentData.otp,
-    // );
+    const otpID = await this.otpService.verifyOTP(
+      user,
+      OtpPurpose.add_document,
+      documentData.otp,
+    );
     const device = await this.deviceService.getDeviceById(
       documentData.deviceId,
     );
@@ -81,16 +81,16 @@ export class DocumentService {
       };
     }
     const document = await this.documentRepositry.save(newDocument);
-    // if (file) {
-    //   const response = await this.fileUploadService.uploadDocumentFile(
-    //     file,
-    //     user,
-    //     S3_ENUMS.docs,
-    //   );
-    //   const fileName = `${S3_ENUMS.URL}/${response.fileName}`;
-    //   document.file = fileName;
-    //   await this.documentRepositry.save(document);
-    // }
+    if (file) {
+      const response = await this.fileUploadService.uploadDocumentFile(
+        file,
+        user,
+        S3_ENUMS.docs,
+      );
+      const fileName = `${S3_ENUMS.URL}/${response.fileName}`;
+      document.file = fileName;
+      await this.documentRepositry.save(document);
+    }
     const documentHistory = this.documentHistoryRepositry.create({
       type: document.type,
       title: document.title,
@@ -101,7 +101,7 @@ export class DocumentService {
       document: document,
     });
     await this.documentHistoryRepositry.save(documentHistory);
-    // await this.otpService.deleteOtp(otpID);
+    await this.otpService.deleteOtp(otpID);
     return document;
   }
 
