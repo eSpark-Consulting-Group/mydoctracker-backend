@@ -1,9 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Matches,
@@ -91,9 +94,11 @@ export class AddGeofenceDTO {
   @ApiProperty({
     example: [{ lat: 90, lng: 180 }],
   })
-  @IsArrayOfObjects()
+  @IsArray()
+  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => GeofencePoint)
+  @IsObject({ each: true })
   geofence: GeofencePoint[];
 }
 export class EditGeofenceDTO {
