@@ -13,3 +13,7 @@ export enum S3_ENUMS {
   docs = 'docs',
   firmwares = 'firmwares',
 }
+export enum DocumentType {
+  SINGLE = 'SINGLE',
+  MULTIPLE = 'MULTIPLE',
+}

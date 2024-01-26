@@ -13,7 +13,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { DocumentType } from 'src/entities/Document.entity';
+import { DocumentType } from 'enum';
 
 class FieldDto {
   @ApiProperty({ example: 'fieldName' })
