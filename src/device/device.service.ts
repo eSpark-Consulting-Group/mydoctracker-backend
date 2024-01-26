@@ -23,6 +23,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Admin } from 'src/entities/Admin.entity';
 import * as bcrypt from 'bcrypt';
+import { FirmwareService } from 'src/firmware/firmware.service';
 
 @Injectable()
 export class DeviceService {
@@ -34,6 +35,7 @@ export class DeviceService {
     @InjectRepository(Admin)
     private adminRepositry: Repository<Admin>,
     private mongodDBService: MongoDBService,
+    private firmwareService: FirmwareService,
   ) {}
 
   private async getCurrentUserDocument(assignee: Users, id: string) {
@@ -66,8 +68,7 @@ export class DeviceService {
     return foundDevice;
   }
 
-  async addTelemetry(telemetryData: AddTelemetryDTO, macAddress: string) {
-    const device = await this.checkDeviceByMac(macAddress);
+  async addTelemetry(telemetryData: AddTelemetryDTO, device: DeviceInventory) {
     await this.mongodDBService.addDeviceTelemetry(
       {
         ...telemetryData,
@@ -184,12 +185,13 @@ export class DeviceService {
     await this.documentRespositry.save(document);
   }
 
-  async getDeviceInfo(macAddress: string) {
-    await this.checkDeviceByMac(macAddress);
+  async getDeviceInfo(device: DeviceInventory) {
     const document = await this.documentRespositry
       .createQueryBuilder('document')
       .innerJoin('document.tracker', 'tracker')
-      .where('tracker.macAddress = :macAddress', { macAddress })
+      .where('tracker.macAddress = :macAddress', {
+        macAddress: device.macAddress,
+      })
       .getOne();
     const documentData = {
       geofences: [],
@@ -216,7 +218,7 @@ export class DeviceService {
     state: DeviceStates,
   ) {
     const { idleStateInterval, mobileStateInterval } =
-      await this.getDeviceInfo(macAddress);
+      await this.getDeviceInfo(device);
     console.log(
       `Adding telemetry for device id = ${device.id} & macAddress = ${macAddress}`,
     );
@@ -238,7 +240,7 @@ export class DeviceService {
       telemetryData.lng = lng;
       interval = interval * mobileStateInterval;
     }
-    await this.addTelemetry(telemetryData, macAddress);
+    await this.addTelemetry(telemetryData, device);
     setTimeout(
       () => this.deviceTelemetryRunner(macAddress, device, state),
       interval,
@@ -248,7 +250,7 @@ export class DeviceService {
   async addFakeDevice(macAddress: string, deviceData: FakeDeviceDTO) {
     let admin: Admin;
     const foundDevice = await this.deviceInventory.findOne({
-      where: { macAddress: macAddress },
+      where: { macAddress },
     });
     if (foundDevice) {
       throw new BadRequestException(
@@ -275,5 +277,22 @@ export class DeviceService {
     await this.deviceInventory.save(device);
     this.deviceTelemetryRunner(macAddress, device, deviceData.state);
     return { id: device.id };
+  }
+
+  getDeviceByMac(macAddress: string) {
+    return this.deviceInventory.findOne({ where: { macAddress } });
+  }
+
+  async getLatestFirmware() {
+    const firmware = await this.firmwareService.getLatestFirmware();
+    return { build: firmware.build, version: firmware.version };
+  }
+
+  async getFirmwaresList() {
+    const firmwares = await this.firmwareService.getFirmwaresList();
+    return firmwares.map((firmware) => ({
+      build: firmware.build,
+      version: firmware.version,
+    }));
   }
 }

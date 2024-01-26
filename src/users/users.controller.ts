@@ -2,12 +2,14 @@ import {
   Body,
   Controller,
   HttpCode,
+  HttpStatus,
   Ip,
+  ParseFilePipeBuilder,
   Post,
   Put,
   Query,
   Req,
-  UploadedFiles,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -43,16 +45,16 @@ import {
   UpdateProfileResponseDto,
 } from './dto/response-dto';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
-import { imageFileInterceptor } from 'src/utils/helpers/interceptors/file.upload';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/User.entity';
 import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
 import { STRINGS } from 'enum';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller(STRINGS.USERS_ROUTE)
 @ApiTags('Users')
 export class UsersController {
-  constructor(private userService: UsersService) { }
+  constructor(private userService: UsersService) {}
   @ApiOperation({
     summary: 'Signup a single user',
     description:
@@ -113,7 +115,6 @@ export class UsersController {
     status: 404,
   })
   @UseGuards(ApiKeyAuthGuard, JwtGuard)
-
   @ApiQuery({ name: 'token', required: false })
   @Put(`${STRINGS.CHANGE_PASSWORD_ROUTE}`)
   @HttpCode(200)
@@ -137,7 +138,11 @@ export class UsersController {
     };
   }
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update Profile', description: 'Updates user profile information, including a new profile picture. Accepts an "UpdateProfileDTO" in the request body for other profile details. The "UploadedFiles" decorator captures a "profilePicture" file from the request. Utilizes the "UserService.updateProfile" method to apply changes to the user profile. Requires the authenticated user details obtained from the "@CurrentUser" decorator.  Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users to modify their profile details and upload a new profile picture.' })
+  @ApiOperation({
+    summary: 'Update Profile',
+    description:
+      'Updates user profile information, including a new profile picture. Accepts an "UpdateProfileDTO" in the request body for other profile details. The "UploadedFile" decorator captures a "profilePicture" file from the request. Utilizes the "UserService.updateProfile" method to apply changes to the user profile. Requires the authenticated user details obtained from the "@CurrentUser" decorator.  Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users to modify their profile details and upload a new profile picture.',
+  })
   @UseGuards(JwtGuard)
   @Put('/update')
   @HttpCode(200)
@@ -150,16 +155,23 @@ export class UsersController {
     type: ErrorResponseBody,
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(imageFileInterceptor)
+  @UseInterceptors(FileInterceptor('profilePicture'))
   async updateProfile(
-    @UploadedFiles()
-    file: {
-      profilePicture: any;
-    },
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /^image\/(jpeg|jpg|png)$/,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          fileIsRequired: false,
+        }),
+    )
+    file: Express.Multer.File,
     @Body() reqData: UpdateProfileDTO,
     @CurrentUser() user: Users,
   ): Promise<APIResponseType> {
-    const data = await this.userService.updateProfile(reqData, file.profilePicture, user);
+    const data = await this.userService.updateProfile(reqData, file, user);
     return {
       data,
       status: 'success',
@@ -169,7 +181,8 @@ export class UsersController {
 
   @ApiOperation({
     summary: 'Generate password reset link',
-    description: 'Initiates the password reset process for a user who has forgotten their password. Accepts "ForgotPasswordDTO" containing the user email for identification. Captures the client IP address using the "@Ip" decorator and device information from the request. Utilizes the "UserService.forgotPassword" method to generate a password reset token and send an email with instructions for resetting the password. Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users who need to recover access to their accounts.'
+    description:
+      'Initiates the password reset process for a user who has forgotten their password. Accepts "ForgotPasswordDTO" containing the user email for identification. Captures the client IP address using the "@Ip" decorator and device information from the request. Utilizes the "UserService.forgotPassword" method to generate a password reset token and send an email with instructions for resetting the password. Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users who need to recover access to their accounts.',
   })
   @Post('/password/forget')
   @HttpCode(200)
@@ -186,11 +199,11 @@ export class UsersController {
       reqData.email,
       ip,
       request.device,
-      reqData.host
+      reqData.host,
     );
     return {
       status: 'success',
-      message: 'Email has been sent for password reset!'
+      message: 'Email has been sent for password reset!',
     };
   }
 }

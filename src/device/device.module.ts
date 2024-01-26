@@ -16,6 +16,8 @@ import { Users } from 'src/entities/User.entity';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { EmailService } from 'src/utils/helpers/email';
 import { Admin } from 'src/entities/Admin.entity';
+import { FirmwareService } from 'src/firmware/firmware.service';
+import { Firmware } from 'src/entities/Firmware.entity';
 
 @Module({
   imports: [
@@ -23,7 +25,13 @@ import { Admin } from 'src/entities/Admin.entity';
     MongooseModule.forFeature([
       { name: DeviceTelemtry.name, schema: DeviceTelemetrySchema },
     ]),
-    TypeOrmModule.forFeature([DeviceInventory, Document, Users, Admin]),
+    TypeOrmModule.forFeature([
+      DeviceInventory,
+      Document,
+      Users,
+      Admin,
+      Firmware,
+    ]),
   ],
   controllers: [DeviceController],
   providers: [
@@ -32,6 +40,7 @@ import { Admin } from 'src/entities/Admin.entity';
     UsersService,
     CloudStorageService,
     EmailService,
+    FirmwareService,
   ],
   exports: [DeviceService],
 })

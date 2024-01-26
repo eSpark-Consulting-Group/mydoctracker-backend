@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { extname } from 'path';
 import { Users } from 'src/entities/User.entity';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const B2 = require('backblaze-b2');
@@ -16,7 +17,7 @@ export class CloudStorageService {
   }
 
   async uploadFileInS3(
-    file,
+    file: Express.Multer.File,
     user: Users,
     folderName: string,
   ): Promise<{ fileId: string; fileName: string }> {
@@ -44,8 +45,7 @@ export class CloudStorageService {
     const data = await this.b2.getUploadUrl({
       bucketId: process.env.BUCKET_ID,
     });
-    const parts = file.originalname.split('.');
-    const fileExtension = parts.pop();
+    const fileExtension = extname(file.originalname);
     const response = await this.b2.uploadFile({
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,
@@ -66,8 +66,7 @@ export class CloudStorageService {
     const data = await this.b2.getUploadUrl({
       bucketId: process.env.BUCKET_ID,
     });
-    const parts = file.originalname.split('.');
-    const fileExtension = parts.pop();
+    const fileExtension = extname(file.originalname);
     const response = await this.b2.uploadFile({
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,

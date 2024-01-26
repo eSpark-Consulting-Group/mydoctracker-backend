@@ -20,6 +20,8 @@ import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
 import { OTPService } from 'src/otp/otp.service';
 import { OTP } from 'src/entities/otp.entity';
 import { Admin } from 'src/entities/Admin.entity';
+import { FirmwareService } from 'src/firmware/firmware.service';
+import { Firmware } from 'src/entities/Firmware.entity';
 
 @Module({
   imports: [
@@ -33,7 +35,8 @@ import { Admin } from 'src/entities/Admin.entity';
       DeviceInventory,
       DocumentHistory,
       OTP,
-      Admin
+      Admin,
+      Firmware,
     ]),
   ],
   controllers: [DcoumentController],
@@ -45,6 +48,7 @@ import { Admin } from 'src/entities/Admin.entity';
     DeviceService,
     MongoDBService,
     OTPService,
+    FirmwareService,
   ],
   exports: [DocumentService],
 })

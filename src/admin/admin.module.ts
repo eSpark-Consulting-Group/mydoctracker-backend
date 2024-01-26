@@ -6,11 +6,12 @@ import { AdminController } from './admin.controller';
 import { Admin } from 'src/entities/Admin.entity';
 import { Firmware } from 'src/entities/Firmware.entity';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
+import { FirmwareService } from 'src/firmware/firmware.service';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([Admin, Firmware])],
   controllers: [AdminController],
-  providers: [AdminService, CloudStorageService],
+  providers: [AdminService, CloudStorageService, FirmwareService],
   exports: [AdminService],
 })
 export class AdminModule {}
