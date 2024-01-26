@@ -15,6 +15,7 @@ import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
 import { OTPService } from 'src/otp/otp.service';
 import { OtpPurpose } from 'src/entities/otp.entity';
 import { EmailService } from 'src/utils/helpers/email';
+import { paginate, IPaginationOptions } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class DocumentService {
@@ -85,6 +86,16 @@ export class DocumentService {
       document.file = fileName;
       await this.documentRepositry.save(document);
     }
+    const documentHistory = this.documentHistoryRepositry.create({
+      type: document.type,
+      title: document.title,
+      creationDate: document.creationDate,
+      documentId: document.id,
+      file: document.file,
+      meta: document.meta,
+      document: document,
+    });
+    await this.documentHistoryRepositry.save(documentHistory);
     await this.otpService.deleteOtp(otpID);
     return document;
   }
@@ -96,7 +107,6 @@ export class DocumentService {
     id: string,
   ) {
     const document = await this.getCurrentUserDoc(id, user);
-    const fileName = document.file;
     if (file) {
       const response = await this.fileUploadService.uploadDocumentFile(
         file,
@@ -105,13 +115,6 @@ export class DocumentService {
       );
       document.file = `${S3_ENUMS.URL}/${response.fileName}`;
     }
-    const documentHistory = this.documentHistoryRepositry.create({
-      type: document.type,
-      title: document.title,
-      creationDate: document.creationDate,
-      documentId: document,
-      file: fileName,
-    });
     document.creationDate = documentData.creationDate || document.creationDate;
     document.title = documentData.title || document.title;
     document.type = documentData.type || document.type;
@@ -121,6 +124,15 @@ export class DocumentService {
         fields: JSON.parse(documentData.fields),
       };
     }
+    const documentHistory = this.documentHistoryRepositry.create({
+      type: document.type,
+      title: document.title,
+      creationDate: document.creationDate,
+      documentId: document.id,
+      file: document.file,
+      meta: document.meta,
+      document: document,
+    });
     await this.documentRepositry.save(document);
     await this.documentHistoryRepositry.save(documentHistory);
     return document;
@@ -132,11 +144,16 @@ export class DocumentService {
     await this.documentRepositry.save(document);
   }
 
-  async getDocumentHistory(assignee: Users, id: string) {
-    const document = await this.getCurrentUserDoc(id, assignee);
-    const history = await this.documentHistoryRepositry.find({
-      where: { documentId: document },
-    });
-    return history;
+  async getDocumentHistory(
+    assignee: Users,
+    id: string,
+    options: IPaginationOptions,
+  ) {
+    await this.getCurrentUserDoc(id, assignee);
+    const queryBuilder = this.documentHistoryRepositry
+      .createQueryBuilder('history')
+      .where('history.documentId = :id', { id })
+      .orderBy('history.createdAt', 'DESC');
+    return paginate(queryBuilder, options);
   }
 }
