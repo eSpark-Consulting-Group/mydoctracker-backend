@@ -29,7 +29,7 @@ export class DocumentService {
     private otpService: OTPService,
     private emailService: EmailService,
   ) {}
-  private async getCurrentUserDoc(id: string, assignee: Users) {
+  async getCurrentUserDoc(id: string, assignee: Users) {
     const document = await this.documentRepositry.findOne({
       where: { id, assignee, isDeleted: false },
     });
@@ -156,7 +156,7 @@ export class DocumentService {
       .orderBy('history.createdAt', 'DESC');
     return paginate(queryBuilder, options);
   }
-  
+
   geAllDocuments(assignee: Users) {
     return this.documentRepositry.find({
       where: { assignee, isDeleted: false, enabled: true },

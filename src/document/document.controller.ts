@@ -228,4 +228,27 @@ export class DcoumentController {
       message: 'Document has been deleted successfully!',
     };
   }
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get Document By ID',
+  })
+  @UseGuards(JwtGuard)
+  @Get('/:id')
+  @HttpCode(200)
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
+  async getDocumentById(
+    @CurrentUser() user: Users,
+    @Param() id: { id: string },
+  ) {
+    const data = await this.documentService.getCurrentUserDoc(id.id, user);
+    return {
+      data,
+      status: 'success',
+      message: 'Document has been fetched successfully!',
+    };
+  }
 }
