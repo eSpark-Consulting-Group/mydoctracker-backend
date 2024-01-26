@@ -15,7 +15,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { DeviceStates } from 'src/mongodb/schemas/device_telemetry.entity';
-import { IsArrayOfObjects } from 'src/utils/decorators/array-objects';
 import { IsAfterNow } from 'src/utils/decorators/future-date';
 
 export class AddTelemetryDTO {
@@ -122,9 +121,11 @@ export class EditGeofenceDTO {
     example: [{ lat: 90, lng: 180 }],
   })
   @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => GeofencePoint)
-  @IsArrayOfObjects()
+  @IsObject({ each: true })
   geofence: GeofencePoint[];
 }
 

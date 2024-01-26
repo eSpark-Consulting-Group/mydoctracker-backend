@@ -112,9 +112,15 @@ export class DocumentService {
       documentId: document,
       file: fileName,
     });
-    document.creationDate = documentData.creationDate;
-    document.title = documentData.title;
-    document.type = documentData.type;
+    document.creationDate = documentData.creationDate || document.creationDate;
+    document.title = documentData.title || document.title;
+    document.type = documentData.type || document.type;
+    if (documentData.fields) {
+      document.meta = {
+        ...document.meta,
+        fields: JSON.parse(documentData.fields),
+      };
+    }
     await this.documentRepositry.save(document);
     await this.documentHistoryRepositry.save(documentHistory);
     return document;
