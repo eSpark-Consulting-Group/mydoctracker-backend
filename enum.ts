@@ -10,4 +10,5 @@ export enum S3_ENUMS {
   URL = 'https://mydoctracker-dev.s3.us-west-004.backblazeb2.com',
   profile_pictures = 'profile_pictures',
   docs = 'docs',
+  firmwares = "firmwares"
 }
