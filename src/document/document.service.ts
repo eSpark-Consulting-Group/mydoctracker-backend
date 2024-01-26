@@ -69,6 +69,11 @@ export class DocumentService {
       title: documentData.title,
       tracker: device,
     });
+    if (documentData.fields) {
+      newDocument.meta = {
+        fields: JSON.parse(documentData.fields),
+      };
+    }
     const document = await this.documentRepositry.save(newDocument);
     if (file) {
       const response = await this.fileUploadService.uploadDocumentFile(
