@@ -89,7 +89,7 @@ export class DeviceController {
       message: 'Latest firmware has been fetched!',
     };
   }
-  
+
 
   @ApiSecurity('key')
   @ApiOperation({
@@ -172,8 +172,12 @@ export class DeviceController {
     @Param() param: DeviceMacDTO,
     @Body() reqData: FakeDeviceDTO,
   ) {
-    await this.deviceService.addFakeDevice(param.macaddress, reqData);
+    const data = await this.deviceService.addFakeDevice(
+      param.macaddress,
+      reqData,
+    );
     return {
+      data,
       status: 'success',
       message: 'Fake Device has been added!',
     };
