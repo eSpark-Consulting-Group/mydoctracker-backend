@@ -156,4 +156,10 @@ export class DocumentService {
       .orderBy('history.createdAt', 'DESC');
     return paginate(queryBuilder, options);
   }
+  
+  geAllDocuments(assignee: Users) {
+    return this.documentRepositry.find({
+      where: { assignee, isDeleted: false, enabled: true },
+    });
+  }
 }

@@ -37,6 +37,27 @@ import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('document')
 export class DcoumentController {
   constructor(private documentService: DocumentService) {}
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get all documents',
+  })
+  @UseGuards(JwtGuard)
+  @Get('/')
+  @HttpCode(200)
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  async getAllDocuments(@CurrentUser() user: Users) {
+    const data = await this.documentService.geAllDocuments(user);
+    return {
+      status: 'success',
+      message: 'Documents have been fetched successfully!',
+      data,
+    };
+  }
+
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Add a Document',
