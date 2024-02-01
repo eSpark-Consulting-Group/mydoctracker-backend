@@ -12,6 +12,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DocumentModule } from './document/document.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AdminModule } from './admin/admin.module';
+import { SubsidiaryModule } from './subsidiary/subsidiary.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AdminModule } from './admin/admin.module';
     DeviceModule,
     MongoDBModule,
     DocumentModule,
+    SubsidiaryModule,
   ],
   controllers: [AppController],
   providers: [
