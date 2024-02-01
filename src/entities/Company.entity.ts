@@ -1,19 +1,27 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Users } from './User.entity';
 
-@Entity()
+@Entity({ name: 'company' })
 export class Company {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column({ unique: true, length: 100 })
-  email: string;
-  
-  @Column()
+
+  @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ length: 20, unique: true })
+  @Column({ type: 'varchar', length: 255, unique: true })
+  email: string;
+
+  @Column({ type: 'varchar', length: 20, unique: true })
   contact: string;
-  
-  @ManyToOne(() => Users, (user) => user.id)
+
+  @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user' })
   user: Users;
 }
