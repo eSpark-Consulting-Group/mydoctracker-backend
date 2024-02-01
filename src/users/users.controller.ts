@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Ip,
@@ -204,6 +205,25 @@ export class UsersController {
     return {
       status: 'success',
       message: 'Email has been sent for password reset!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get User Info',
+  })
+  @UseGuards(JwtGuard)
+  @Get('/info')
+  @HttpCode(200)
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  getUserInfo(@CurrentUser() user: Users) {
+    return {
+      status: 'success',
+      message: 'User info has been fetched successfully!',
+      data: user,
     };
   }
 }
