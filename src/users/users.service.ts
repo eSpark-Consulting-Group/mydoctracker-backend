@@ -35,7 +35,7 @@ export class UsersService {
       where: { id },
     });
   }
-  async signupSingleUser(newUser: SignupDTO) {
+  async signupUser(newUser: SignupDTO) {
     try {
       const createdUser = this.userRepositry.create({
         firstName: newUser.firstName,
@@ -44,7 +44,7 @@ export class UsersService {
         username: newUser.username,
         email: newUser.email,
         hashedPassword: this.hashPassword(newUser.password),
-        role: UserRoles.SU,
+        role: UserRoles[newUser.role],
       });
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };

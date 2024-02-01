@@ -70,8 +70,8 @@ export class UsersController {
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  async signupSingleUser(@Body() reqData: SignupDTO) {
-    const data = await this.userService.signupSingleUser(reqData);
+  async signup(@Body() reqData: SignupDTO) {
+    const data = await this.userService.signupUser(reqData);
     return {
       status: 'success',
       message: 'Your account has been created successfully!',
@@ -195,7 +195,7 @@ export class UsersController {
     @Ip() ip: string,
     @Req() request: any,
   ) {
-    const data = await this.userService.forgotPassword(
+    await this.userService.forgotPassword(
       reqData.email,
       ip,
       request.device,

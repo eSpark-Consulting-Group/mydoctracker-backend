@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDefined,
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -13,8 +14,15 @@ import {
 } from 'class-validator';
 import { CONTACT_REGEX, PASSWORD_REGEX, USERNAME_REGEX } from 'enum';
 
-const invalidContactMsg = "Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890"
-const invalidUsernameMsg = "Username should only contain alphanumeric characters (letters and numbers), Small Letters, Underscores (_) and hyphens (-)."
+const invalidContactMsg =
+  'Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890';
+const invalidUsernameMsg =
+  'Username should only contain alphanumeric characters (letters and numbers), Small Letters, Underscores (_) and hyphens (-).';
+
+enum SignupRolesEnum {
+  CU = 'CU',
+  SU = 'SU',
+}
 
 export class SignupDTO {
   @ApiProperty({
@@ -74,7 +82,7 @@ export class SignupDTO {
   @IsString()
   @IsNotEmpty()
   @IsDefined()
-  @Matches(CONTACT_REGEX, { message: invalidContactMsg, })
+  @Matches(CONTACT_REGEX, { message: invalidContactMsg })
   readonly contact: string;
 
   @ApiProperty({
@@ -84,6 +92,15 @@ export class SignupDTO {
   @IsBoolean()
   @IsOptional()
   readonly rememberMe: boolean;
+
+  @ApiProperty({
+    type: SignupRolesEnum,
+    default: SignupRolesEnum.SU,
+  })
+  @IsString()
+  @IsOptional()
+  @IsIn(Object.values(SignupRolesEnum))
+  readonly role?: SignupRolesEnum = SignupRolesEnum.SU;
 }
 
 export class SigninDTO {
@@ -161,7 +178,6 @@ export class ForgotPasswordDTO {
   @IsEmail()
   readonly email: string;
 
-
   @ApiProperty({
     type: String,
     example: 'abc.com',
@@ -190,7 +206,7 @@ export class UpdateProfileDTO {
 
   @ApiProperty({ type: String, required: false })
   @IsDefined()
-  @Matches(CONTACT_REGEX, { message: invalidContactMsg, })
+  @Matches(CONTACT_REGEX, { message: invalidContactMsg })
   @IsOptional()
   readonly contact: string;
   @ApiProperty({
@@ -199,5 +215,5 @@ export class UpdateProfileDTO {
     format: 'binary',
   })
   @IsOptional()
-  readonly profilePicture: File;
+  readonly profilePicture: Express.Multer.File;
 }
