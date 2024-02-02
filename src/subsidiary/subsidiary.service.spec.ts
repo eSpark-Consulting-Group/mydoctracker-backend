@@ -3,7 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SubsidiaryService } from './subsidiary.service';
-import { CreateSubsidiaryDTO, EditSubsidiaryDTO } from './dto/subsidiary-dto';
+import { CreateSubsidiaryDTO } from './dto/subsidiary-dto';
 import { Subsidiary } from 'src/entities/Subsidiary.entity';
 import { Users } from 'src/entities/User.entity';
 import { Company } from 'src/entities/Company.entity';
@@ -44,7 +44,6 @@ describe('SubsidiaryService', () => {
     it('should create a subsidiary successfully', async () => {
       // Mock data
       const createSubsidiaryDTO: CreateSubsidiaryDTO = {
-        company: 'company_id',
         name: 'Subsidiary Name',
       };
 
@@ -65,6 +64,7 @@ describe('SubsidiaryService', () => {
       const result = await subsidiaryService.createSubsidiary(
         mockUser,
         createSubsidiaryDTO,
+        'company_id',
       );
       expect(result).toEqual({
         id: '1',
@@ -76,19 +76,22 @@ describe('SubsidiaryService', () => {
 
     it('should throw NotFoundException if company is not found', async () => {
       const createSubsidiaryDTO: CreateSubsidiaryDTO = {
-        company: 'non_existent_company_id',
         name: 'Subsidiary Name',
       };
       mockCompanyService.getCompanyById.mockResolvedValue(undefined);
       await expect(
-        subsidiaryService.createSubsidiary(mockUser, createSubsidiaryDTO),
+        subsidiaryService.createSubsidiary(
+          mockUser,
+          createSubsidiaryDTO,
+          'non_existent_company_id',
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('editSubsidiary', () => {
     it('should edit a subsidiary successfully', async () => {
-      const editSubsidiaryDTO: EditSubsidiaryDTO = {
+      const editSubsidiaryDTO: CreateSubsidiaryDTO = {
         name: 'New Subsidiary Name',
       };
       const subsidiary = new Subsidiary();
@@ -112,7 +115,7 @@ describe('SubsidiaryService', () => {
     });
 
     it('should throw NotFoundException if subsidiary is not found', async () => {
-      const editSubsidiaryDTO: EditSubsidiaryDTO = {
+      const editSubsidiaryDTO: CreateSubsidiaryDTO = {
         name: 'New Subsidiary Name',
       };
       jest.spyOn(subsidiaryRepository, 'findOne').mockResolvedValue(undefined);
@@ -171,5 +174,63 @@ describe('SubsidiaryService', () => {
       });
       expect(subsidiaryRepository.delete).toHaveBeenCalledWith(subsidiary);
     });
+  });
+
+  describe('getAllSubsidiariesByCompany', () => {
+    it('should get all subsidiaries by company successfully', async () => {
+      // Mock the company service to return a company
+      jest
+        .spyOn(mockCompanyService, 'getCompanyById')
+        .mockResolvedValue(mockCompany);
+
+      // Mock the repository method
+      jest
+        .spyOn(subsidiaryRepository, 'find')
+        .mockResolvedValue([
+          { id: 'subsidiary_id', user: mockUser, company: mockCompany },
+        ] as Subsidiary[]);
+
+      // Execute the service method
+      const result = await subsidiaryService.getAllSubsidiariesByCompany(
+        mockCompany.id,
+        mockUser,
+      );
+
+      // Assertions
+      expect(mockCompanyService.getCompanyById).toHaveBeenCalledWith(
+        mockCompany.id,
+        mockUser,
+      );
+      expect(subsidiaryRepository.find).toHaveBeenCalledWith({
+        where: { company: mockCompany, user: mockUser },
+      });
+      expect(result).toEqual([
+        { id: 'subsidiary_id', user: mockUser, company: mockCompany },
+      ]);
+    });
+
+    it('should throw NotFoundException if company is not found', async () => {
+      // Mock data
+      const companyId = 'non_existent_company_id';
+      const user = { id: 'user_id', username: 'testuser' } as Users;
+
+      // Mock the company service to return null (company not found)
+      jest
+        .spyOn(mockCompanyService, 'getCompanyById')
+        .mockReturnValue(Promise.resolve(null));
+
+      // Execute the service method and expect it to throw NotFoundException
+      await expect(
+        subsidiaryService.getAllSubsidiariesByCompany(companyId, user),
+      ).rejects.toThrow(NotFoundException);
+
+      // Assertions
+      expect(mockCompanyService.getCompanyById).toHaveBeenCalledWith(
+        companyId,
+        user,
+      );
+    });
+
+    // Add more test cases for different scenarios
   });
 });
