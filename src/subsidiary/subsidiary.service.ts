@@ -44,6 +44,10 @@ export class SubsidiaryService {
     if (!subsidiary) {
       throw new NotFoundException('Subsidiary not found!');
     }
-    return this.subsidiaryRepositry.delete(subsidiary);
+    const deletionResult = await this.subsidiaryRepositry.delete(subsidiary);
+
+    if (deletionResult.affected === 0) {
+      throw new NotFoundException('Subsidiary not found!');
+    }
   }
 }

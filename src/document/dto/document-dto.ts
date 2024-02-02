@@ -78,7 +78,7 @@ export class AddDocumentDTO {
     type: 'string',
     format: 'binary',
   })
-  readonly file: File;
+  readonly file: Express.Multer.File;
 
   @ApiProperty({
     type: [FieldDto],
@@ -142,7 +142,7 @@ export class EditDocumentDTO {
   @IsOptional()
   @IsArray()
   fields?: string;
-  
+
   @ApiProperty({
     required: false,
     type: 'string',
