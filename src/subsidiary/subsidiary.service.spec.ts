@@ -68,7 +68,7 @@ describe('SubsidiaryService', () => {
       );
       expect(result).toEqual({
         id: '1',
-        user: mockUser,
+        createdBy: mockUser,
         company: mockCompany,
         name: 'Subsidiary Name',
       });
@@ -108,7 +108,7 @@ describe('SubsidiaryService', () => {
 
       // Assertions
       expect(subsidiaryRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 'subsidiary_id', user: mockUser },
+        where: { id: 'subsidiary_id', createdBy: mockUser },
       });
       expect(subsidiaryRepository.save).toHaveBeenCalledWith(subsidiary);
       expect(result).toEqual(subsidiary);
@@ -142,7 +142,7 @@ describe('SubsidiaryService', () => {
 
       // Assertions
       expect(subsidiaryRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 'subsidiary_id', user: mockUser },
+        where: { id: 'subsidiary_id', createdBy: mockUser },
       });
       expect(subsidiaryRepository.delete).toHaveBeenCalledWith(subsidiary);
     });
@@ -156,7 +156,7 @@ describe('SubsidiaryService', () => {
         ),
       ).rejects.toThrow(NotFoundException);
       expect(subsidiaryRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 'non_existent_subsidiary_id', user: mockUser },
+        where: { id: 'non_existent_subsidiary_id', createdBy: mockUser },
       });
     });
 
@@ -170,7 +170,7 @@ describe('SubsidiaryService', () => {
         subsidiaryService.deleteSubsidiary(mockUser, 'subsidiary_id'),
       ).rejects.toThrow(NotFoundException);
       expect(subsidiaryRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 'subsidiary_id', user: mockUser },
+        where: { id: 'subsidiary_id', createdBy: mockUser },
       });
       expect(subsidiaryRepository.delete).toHaveBeenCalledWith(subsidiary);
     });
@@ -202,10 +202,10 @@ describe('SubsidiaryService', () => {
         mockUser,
       );
       expect(subsidiaryRepository.find).toHaveBeenCalledWith({
-        where: { company: mockCompany, user: mockUser },
+        where: { company: mockCompany, createdBy: mockUser },
       });
       expect(result).toEqual([
-        { id: 'subsidiary_id', user: mockUser, company: mockCompany },
+        { id: 'subsidiary_id', createdBy: mockUser, company: mockCompany },
       ]);
     });
 
