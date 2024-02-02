@@ -23,6 +23,6 @@ export class Subsidiary {
   company: Company;
 
   @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user' })
-  user: Users;
+  @JoinColumn({ name: 'createdBy' })
+  createdBy: Users;
 }

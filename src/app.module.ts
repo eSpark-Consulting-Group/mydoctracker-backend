@@ -13,6 +13,7 @@ import { DocumentModule } from './document/document.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AdminModule } from './admin/admin.module';
 import { SubsidiaryModule } from './subsidiary/subsidiary.module';
+import { EmployeeModule } from './employee/employee.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SubsidiaryModule } from './subsidiary/subsidiary.module';
     MongoDBModule,
     DocumentModule,
     SubsidiaryModule,
+    EmployeeModule,
   ],
   controllers: [AppController],
   providers: [

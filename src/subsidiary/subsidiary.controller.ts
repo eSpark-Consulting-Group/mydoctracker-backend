@@ -17,23 +17,25 @@ import {
 } from '@nestjs/swagger';
 import { SubsidiaryService } from './subsidiary.service';
 import { ErrorResponseBody } from 'src/utils/APIResponse';
-import { CorporateUserJwtGuard } from 'src/auth/guard/corporate-user-auth-guard';
 import { CurrentUser } from 'src/utils/decorators/current-user';
-import { Users } from 'src/entities/User.entity';
+import { UserRoles, Users } from 'src/entities/User.entity';
 import { CreateSubsidiaryDTO, ParamDTO } from './dto/subsidiary-dto';
+import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
+import { Roles } from 'src/auth/guard/roles-decorator';
 
 @ApiTags('Subsidiary')
+@UseGuards(JwtGuard)
 @Controller('subsidiary')
 export class SubsidiaryController {
   constructor(private readonly subsidiaryService: SubsidiaryService) {}
   @ApiOperation({ summary: 'Add Subsidiary By Company ID' })
   @ApiBearerAuth()
-  @UseGuards(CorporateUserJwtGuard)
   @HttpCode(200)
   @ApiInternalServerErrorResponse({
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
+  @Roles([UserRoles.CU])
   @Post(':id')
   async createSubsidiary(
     @CurrentUser() user: Users,
@@ -56,12 +58,12 @@ export class SubsidiaryController {
     summary: 'Get All Subsidiaries By Company ID',
   })
   @ApiBearerAuth()
-  @UseGuards(CorporateUserJwtGuard)
   @HttpCode(200)
   @ApiInternalServerErrorResponse({
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
+  @Roles([UserRoles.CU])
   @Get(':id')
   async getAllSubsidiariesByCompany(
     @CurrentUser() user: Users,
@@ -80,12 +82,12 @@ export class SubsidiaryController {
 
   @ApiOperation({ summary: 'Edit Subsidiary By Subsidiary ID' })
   @ApiBearerAuth()
-  @UseGuards(CorporateUserJwtGuard)
   @HttpCode(200)
   @ApiInternalServerErrorResponse({
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
+  @Roles([UserRoles.CU])
   @Put(':id')
   async editSubsidiary(
     @CurrentUser() user: Users,
@@ -106,12 +108,12 @@ export class SubsidiaryController {
 
   @ApiOperation({ summary: 'Delete Subsidiary By Subsidiary ID' })
   @ApiBearerAuth()
-  @UseGuards(CorporateUserJwtGuard)
   @HttpCode(200)
   @ApiInternalServerErrorResponse({
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
+  @Roles([UserRoles.CU])
   @Delete(':id')
   async deleteSubsidiary(@CurrentUser() user: Users, @Param() param: ParamDTO) {
     await this.subsidiaryService.deleteSubsidiary(user, param.id);

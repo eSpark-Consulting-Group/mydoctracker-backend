@@ -50,13 +50,13 @@ describe('SubsidiaryService', () => {
       // Mock the repository methods
       jest.spyOn(subsidiaryRepository, 'create').mockReturnValue({
         id: '1',
-        user: mockUser,
+        createdBy: mockUser,
         company: mockCompany,
         name: 'Subsidiary Name',
       });
       jest.spyOn(subsidiaryRepository, 'save').mockResolvedValue({
         id: '1',
-        user: mockUser,
+        createdBy: mockUser,
         company: mockCompany,
         name: 'Subsidiary Name',
       });
@@ -187,7 +187,7 @@ describe('SubsidiaryService', () => {
       jest
         .spyOn(subsidiaryRepository, 'find')
         .mockResolvedValue([
-          { id: 'subsidiary_id', user: mockUser, company: mockCompany },
+          { id: 'subsidiary_id', createdBy: mockUser, company: mockCompany },
         ] as Subsidiary[]);
 
       // Execute the service method

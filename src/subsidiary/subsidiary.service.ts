@@ -12,6 +12,9 @@ export class SubsidiaryService {
     private subsidiaryRepositry: Repository<Subsidiary>,
     private companyService: CompanyService,
   ) {}
+  getSubsidiaryById(user: Users, id: string) {
+    return this.subsidiaryRepositry.findOne({ where: { id, createdBy: user } });
+  }
   async createSubsidiary(
     user: Users,
     data: CreateSubsidiaryDTO,
@@ -23,14 +26,14 @@ export class SubsidiaryService {
     }
     const newSubsidiary = this.subsidiaryRepositry.create({
       company,
-      user,
+      createdBy: user,
       name: data.name,
     });
     return this.subsidiaryRepositry.save(newSubsidiary);
   }
   async editSubsidiary(user: Users, data: CreateSubsidiaryDTO, id: string) {
     const subsidiary = await this.subsidiaryRepositry.findOne({
-      where: { id, user },
+      where: { id, createdBy: user },
     });
     if (!subsidiary) {
       throw new NotFoundException('Subsidiary not found!');
@@ -40,7 +43,7 @@ export class SubsidiaryService {
   }
   async deleteSubsidiary(user: Users, id: string) {
     const subsidiary = await this.subsidiaryRepositry.findOne({
-      where: { id, user },
+      where: { id, createdBy: user },
     });
     if (!subsidiary) {
       throw new NotFoundException('Subsidiary not found!');
@@ -56,6 +59,8 @@ export class SubsidiaryService {
     if (!company) {
       throw new NotFoundException('Company not found!');
     }
-    return this.subsidiaryRepositry.find({ where: { company, user } });
+    return this.subsidiaryRepositry.find({
+      where: { company, createdBy: user },
+    });
   }
 }

@@ -25,7 +25,7 @@ export class UsersService {
     private fileUploadService: CloudStorageService,
     private readonly sendGridClient: EmailService,
   ) {}
-  private hashPassword(password: string) {
+  hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
     return hashedPassowrd;
