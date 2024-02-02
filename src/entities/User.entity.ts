@@ -69,7 +69,7 @@ export class Users {
   @Column({ type: 'json', default: null, nullable: true })
   meta: UserMeta;
 
-  @ManyToOne(() => Subsidiary, { nullable: true, })
+  @ManyToOne(() => Subsidiary, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'subsidiary' })
   subsidiary: Subsidiary;
 }
