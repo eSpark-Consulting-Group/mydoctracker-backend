@@ -1,5 +1,13 @@
 import { Exclude } from 'class-transformer';
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Index,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Subsidiary } from './Subsidiary.entity';
 
 export enum UserRoles {
   SU = 'SU',
@@ -60,6 +68,10 @@ export class Users {
   @Exclude()
   @Column({ type: 'json', default: null, nullable: true })
   meta: UserMeta;
+
+  @ManyToOne(() => Subsidiary, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'subsidiary' })
+  subsidiary: Subsidiary;
 }
 
 export interface UserMeta {
