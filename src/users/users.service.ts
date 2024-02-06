@@ -262,4 +262,29 @@ export class UsersService {
       }
     }
   }
+
+  async getUserBySubsidiary({
+    userId,
+    createdBy,
+  }: {
+    userId: string;
+    createdBy: string;
+  }) {
+    return this.userRepositry
+      .createQueryBuilder('user')
+      .innerJoin('user.subsidiary', 'subsidiary')
+      .where('user.id = :id', { id: userId })
+      .andWhere('subsidiary.createdBy = :createdBy', {
+        createdBy,
+      })
+      .getOne();
+  }
+
+  save(user: Users) {
+    this.userRepositry.save(user);
+  }
+
+  create(user: Object) {
+    return this.userRepositry.create(user);
+  }
 }
