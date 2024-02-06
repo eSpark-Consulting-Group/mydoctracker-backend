@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { UserRoles } from 'src/entities/User.entity';
-import { SignupDTO } from 'src/users/dto/users-dto';
+import { SignupDTO, UpdateProfileDTO } from 'src/users/dto/users-dto';
 
 enum EmployeeRoles {
   ACU = UserRoles.ACU,
@@ -26,3 +26,5 @@ export class AddEmployeeDTO extends SignupDTO {
   @IsNotEmpty()
   readonly subsidiary: string;
 }
+
+export class EditEmployeeDTO extends UpdateProfileDTO {}

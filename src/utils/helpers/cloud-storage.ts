@@ -25,10 +25,11 @@ export class CloudStorageService {
     const data = await this.b2.getUploadUrl({
       bucketId: process.env.BUCKET_ID,
     });
+    const fileExtension = extname(file.originalname);
     const response = await this.b2.uploadFile({
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,
-      fileName: `${folderName}/${user.id}`,
+      fileName: `${folderName}/${user.id}${fileExtension}`,
       data: file.buffer,
     });
     if (response) {
@@ -49,7 +50,7 @@ export class CloudStorageService {
     const response = await this.b2.uploadFile({
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,
-      fileName: `${folderName}/${user.id}/${uuidv4()}.${fileExtension}`,
+      fileName: `${folderName}/${user.id}/${uuidv4()}${fileExtension}`,
       data: file.buffer,
     });
     if (response) {
@@ -70,7 +71,7 @@ export class CloudStorageService {
     const response = await this.b2.uploadFile({
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,
-      fileName: `${folderName}/${fileName}.${fileExtension}`,
+      fileName: `${folderName}/${fileName}${fileExtension}`,
       data: file.buffer,
     });
     if (response) {

@@ -199,5 +199,5 @@ export class UpdateProfileDTO {
     format: 'binary',
   })
   @IsOptional()
-  readonly profilePicture?: File;
+  readonly profilePicture?: Express.Multer.File;
 }
