@@ -263,7 +263,7 @@ export class UsersService {
     }
   }
 
-  async getUserBySubsidiary({
+  async getEmployeeByCU({
     userId,
     createdBy,
   }: {
@@ -286,5 +286,9 @@ export class UsersService {
 
   create(user: Object) {
     return this.userRepositry.create(user);
+  }
+
+  async delete(id: string) {
+    return this.userRepositry.delete(id);
   }
 }

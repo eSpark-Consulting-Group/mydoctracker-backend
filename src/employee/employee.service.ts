@@ -74,12 +74,12 @@ export class EmployeeService {
     createdBy: string,
   ) {
     try {
-      const user = await this.userService.getUserBySubsidiary({
+      const user = await this.userService.getEmployeeByCU({
         createdBy,
         userId,
       });
       if (!user) {
-        throw new NotFoundException('User not found!');
+        throw new NotFoundException('Employee not found!');
       }
       const { contact, email, firstName, lastName, profilePicture } = data;
       user.firstName = firstName || user.firstName;
@@ -112,6 +112,19 @@ export class EmployeeService {
       } else {
         throw error;
       }
+    }
+  }
+  async deleteEmployee(data: { userId: string; createdBy: string }) {
+    const user = await this.userService.getEmployeeByCU({
+      createdBy: data.createdBy,
+      userId: data.userId,
+    });
+    if (!user) {
+      throw new NotFoundException('Employee not found!');
+    }
+    const deletionResult = await this.userService.delete(user.id);
+    if (deletionResult.affected === 0) {
+      throw new NotFoundException('Employee not found!');
     }
   }
 }

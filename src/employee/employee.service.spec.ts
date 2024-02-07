@@ -113,9 +113,7 @@ describe('EmployeeService', () => {
 
   describe('editEmployeeDetails', () => {
     it('should edit employee details successfully', async () => {
-      jest
-        .spyOn(userService, 'getUserBySubsidiary')
-        .mockResolvedValue(mockUser);
+      jest.spyOn(userService, 'getEmployeeByCU').mockResolvedValue(mockUser);
       jest.spyOn(userService, 'save').mockResolvedValue(mockUser);
       const userId = 'mockUserId';
       const createdBy = 'mockCreatedBy';
@@ -128,9 +126,7 @@ describe('EmployeeService', () => {
       expect(result).toEqual(mockUser);
     });
     it('should throw NotFoundException for non-existing user', async () => {
-      jest
-        .spyOn(userService, 'getUserBySubsidiary')
-        .mockResolvedValue(undefined);
+      jest.spyOn(userService, 'getEmployeeByCU').mockResolvedValue(undefined);
       const userId = 'mockUserId';
       const createdBy = 'mockCreatedBy';
       await expect(
@@ -138,9 +134,7 @@ describe('EmployeeService', () => {
       ).rejects.toThrow(NotFoundException);
     });
     it('should throw ConflictException for duplicate entry', async () => {
-      jest
-        .spyOn(userService, 'getUserBySubsidiary')
-        .mockResolvedValue(mockUser);
+      jest.spyOn(userService, 'getEmployeeByCU').mockResolvedValue(mockUser);
       jest.spyOn(userService, 'create').mockReturnValueOnce(mockUser);
       jest.spyOn(userService, 'save').mockImplementation(() => {
         throw {
@@ -155,6 +149,45 @@ describe('EmployeeService', () => {
       await expect(
         employeeService.editEmployeeDetails(editEmployeeDTO, userId, createdBy),
       ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('deleteEmployee', () => {
+    it('should delete employee successfully', async () => {
+      jest.spyOn(userService, 'getEmployeeByCU').mockResolvedValue(mockUser);
+      jest
+        .spyOn(userService, 'delete')
+        .mockResolvedValue({ affected: 1, raw: [] });
+      const createdBy = 'mockCreatedBy';
+      const result = await employeeService.deleteEmployee({
+        userId: mockUser.id,
+        createdBy,
+      });
+      expect(userService.delete).toHaveBeenCalledWith(mockUser.id);
+      expect(result).toEqual(undefined);
+    });
+    it('should throw NotFoundException for non-existing user', async () => {
+      jest.spyOn(userService, 'getEmployeeByCU').mockResolvedValue(undefined);
+      const createdBy = 'mockCreatedBy';
+      await expect(
+        employeeService.deleteEmployee({
+          userId: mockUser.id,
+          createdBy,
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+    it('should throw NotFoundException if deletionResult.affected is 0', async () => {
+      const createdBy = 'mockCreatedBy';
+      jest.spyOn(userService, 'getEmployeeByCU').mockResolvedValue(mockUser);
+      jest
+        .spyOn(userService, 'delete')
+        .mockResolvedValue({ affected: 0, raw: [] });
+      await expect(
+        employeeService.deleteEmployee({
+          userId: mockUser.id,
+          createdBy,
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
