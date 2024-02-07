@@ -37,6 +37,15 @@ export class AddTelemetryDTO {
   readonly lng: number;
 
   @ApiProperty({
+    type: Number,
+    example: 100,
+  })
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  readonly batteryPercentage: number;
+
+  @ApiProperty({
     type: String,
     example: DeviceStates.idle,
   })

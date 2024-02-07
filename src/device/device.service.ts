@@ -31,7 +31,7 @@ export class DeviceService {
     @InjectRepository(DeviceInventory)
     private deviceInventory: Repository<DeviceInventory>,
     @InjectRepository(Document)
-    private documentRespositry: Repository<Document>,
+    private documentRepositry: Repository<Document>,
     @InjectRepository(Admin)
     private adminRepositry: Repository<Admin>,
     private mongodDBService: MongoDBService,
@@ -39,7 +39,7 @@ export class DeviceService {
   ) {}
 
   private async getCurrentUserDocument(assignee: Users, id: string) {
-    const document = await this.documentRespositry.findOne({
+    const document = await this.documentRepositry.findOne({
       where: { id, assignee },
     });
     if (!document) {
@@ -69,6 +69,8 @@ export class DeviceService {
   }
 
   async addTelemetry(telemetryData: AddTelemetryDTO, device: DeviceInventory) {
+    device.batteryPercentage = telemetryData.batteryPercentage;
+    await this.deviceInventory.save(device);
     await this.mongodDBService.addDeviceTelemetry(
       {
         ...telemetryData,
@@ -89,15 +91,15 @@ export class DeviceService {
     const oneHour = 3.6e6;
     if (device.state === DeviceStates.idle) {
       if (deviceNextUpdateAt.getTime() + oneHour > Date.now()) {
-        return true;
+        return { status: true, device };
       } else {
-        return false;
+        return { status: false, device };
       }
     }
     if (deviceNextUpdateAt.getTime() + thirtyMinutes > Date.now()) {
-      return true;
+      return { status: true, device };
     } else {
-      return false;
+      return { status: false, device };
     }
   }
 
@@ -119,7 +121,7 @@ export class DeviceService {
         geofences: [geofence],
       };
     }
-    await this.documentRespositry.save(document);
+    await this.documentRepositry.save(document);
     return geofence;
   }
 
@@ -140,7 +142,7 @@ export class DeviceService {
     }
     geofence.name = geofenceData.name || geofence.name;
     geofence.geofence = geofenceData.geofence || geofence.geofence;
-    await this.documentRespositry.save(document);
+    await this.documentRepositry.save(document);
     return geofence;
   }
 
@@ -182,11 +184,11 @@ export class DeviceService {
     if (index > -1) {
       document.meta.geofences.splice(index, 1);
     }
-    await this.documentRespositry.save(document);
+    await this.documentRepositry.save(document);
   }
 
   async getDeviceInfo(device: DeviceInventory) {
-    const document = await this.documentRespositry
+    const document = await this.documentRepositry
       .createQueryBuilder('document')
       .innerJoin('document.tracker', 'tracker')
       .where('tracker.macAddress = :macAddress', {
@@ -228,6 +230,7 @@ export class DeviceService {
       state: DeviceStates.idle,
       nextUpdateAt: Math.floor((Date.now() + 60000 * 5) / 1000),
       sentAt: Date.now(),
+      batteryPercentage: 100,
     };
     let interval = 60000;
     if (state === DeviceStates.idle) {
