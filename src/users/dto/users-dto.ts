@@ -83,7 +83,7 @@ export class SignupDTO {
   })
   @IsBoolean()
   @IsOptional()
-  readonly rememberMe: boolean;
+  readonly rememberMe?: boolean;
 }
 
 export class SigninDTO {
@@ -176,23 +176,24 @@ export class UpdateProfileDTO {
   @ApiProperty({ type: String, required: false })
   @IsString({ message: 'First name must be a string' })
   @IsOptional()
-  readonly firstName: string;
+  readonly firstName?: string;
 
   @ApiProperty({ type: String, required: false })
   @IsString({ message: 'Last name must be a string' })
   @IsOptional()
-  readonly lastName: string;
+  readonly lastName?: string;
 
   @ApiProperty({ type: String, required: false })
   @IsEmail()
   @IsOptional()
-  readonly email: string;
+  readonly email?: string;
 
   @ApiProperty({ type: String, required: false })
   @IsDefined()
   @Matches(CONTACT_REGEX, { message: invalidContactMsg, })
   @IsOptional()
-  readonly contact: string;
+  readonly contact?: string;
+  
   @ApiProperty({
     required: false,
     type: 'string',

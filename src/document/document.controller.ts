@@ -244,7 +244,7 @@ export class DcoumentController {
     @CurrentUser() user: Users,
     @Param() id: { id: string },
   ) {
-    const data = await this.documentService.getCurrentUserDoc(id.id, user);
+    const data = await this.documentService.getDocumentById(id.id, user);
     return {
       data,
       status: 'success',

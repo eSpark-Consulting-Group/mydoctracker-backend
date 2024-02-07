@@ -60,7 +60,7 @@ export class DocumentService {
       documentData.deviceId,
     );
     const isActive = await this.deviceService.isDeviceActive(device.id);
-    if (!isActive) {
+    if (!isActive.status) {
       throw new BadRequestException('Device is offline');
     }
     const newDocument = this.documentRepositry.create({
@@ -157,9 +157,58 @@ export class DocumentService {
     return paginate(queryBuilder, options);
   }
 
-  geAllDocuments(assignee: Users) {
-    return this.documentRepositry.find({
-      where: { assignee, isDeleted: false, enabled: true },
-    });
+  async geAllDocuments(assignee: Users) {
+    const documents = await this.documentRepositry
+      .createQueryBuilder('document')
+      .innerJoin('document.tracker', 't')
+      .where('document.assignee = :assignee', { assignee: assignee.id })
+      .andWhere('document.isDeleted = :isDeleted', { isDeleted: false })
+      .select(['document', 't.batteryPercentage', 't.id'])
+      .getMany();
+    for (let i = 0; i < documents.length; i++) {
+      const device = await this.deviceService.isDeviceActive(
+        documents[i].tracker.id,
+      );
+      const status = device.status ? 'active' : 'inactive';
+      documents[i].active = device.status;
+      Object.assign(documents[i], {
+        status,
+      });
+    }
+    return documents;
+  }
+
+  async getDocumentById(id: string, assignee: Users) {
+    const document = await this.documentRepositry
+      .createQueryBuilder('document')
+      .innerJoin('document.tracker', 't')
+      .innerJoinAndSelect('document.assignee', 'as')
+      .where('document.id = :id', { id })
+      .andWhere('document.assignee = :assignee', { assignee: assignee.id })
+      .andWhere('document.isDeleted = :isDeleted', { isDeleted: false })
+      .select([
+        'document',
+        't.batteryPercentage',
+        't.id',
+        'as.email',
+        'as.firstName',
+        'as.lastName',
+        'as.contact',
+      ])
+      .getOne();
+    if (!document) {
+      throw new NotFoundException('Document not found!');
+    }
+    const device = await this.deviceService.isDeviceActive(document.tracker.id);
+    document.active = device.status;
+    return {
+      document,
+      lastActivity: {
+        lat: device.device.lat,
+        lng: device.device.lng,
+        state: device.device.state,
+        status: document.active ? 'active' : 'inactive',
+      },
+    };
   }
 }
