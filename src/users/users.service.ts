@@ -281,7 +281,7 @@ export class UsersService {
   }
 
   save(user: Users) {
-    this.userRepositry.save(user);
+    return this.userRepositry.save(user);
   }
 
   create(user: Object) {
