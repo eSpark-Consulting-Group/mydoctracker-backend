@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   Param,
@@ -27,7 +28,7 @@ import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
 export class EmployeeController {
   constructor(private employeeService: EmployeeService) {}
   @ApiBearerAuth()
-  @Roles([UserRoles.CU, UserRoles.ACU])
+  @Roles([UserRoles.CU])
   @Post('')
   @HttpCode(200)
   async addEmployee(
@@ -43,7 +44,7 @@ export class EmployeeController {
   }
 
   @ApiBearerAuth()
-  @Roles([UserRoles.CU, UserRoles.ACU])
+  @Roles([UserRoles.CU])
   @Put(':id')
   @HttpCode(200)
   @ApiConsumes('multipart/form-data')
@@ -75,6 +76,21 @@ export class EmployeeController {
     return {
       data,
       message: 'Employee has been added successfully!',
+      status: 'success',
+    };
+  }
+
+  @ApiBearerAuth()
+  @Roles([UserRoles.CU])
+  @Delete(':id')
+  @HttpCode(200)
+  async deleteEmployee(@CurrentUser() user: Users, @Param() param: ParamDTO) {
+    await this.employeeService.deleteEmployee({
+      createdBy: user.id,
+      userId: param.id,
+    });
+    return {
+      message: 'Employee has been deleted successfully!',
       status: 'success',
     };
   }
