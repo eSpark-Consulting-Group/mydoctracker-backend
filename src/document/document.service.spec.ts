@@ -22,6 +22,7 @@ const mockDocumentRepository = {
   create: jest.fn(),
   save: jest.fn(),
   findOne: jest.fn(),
+  createQueryBuilder: jest.fn(),
 };
 
 const mockDocumentId = 'document_id';
@@ -110,15 +111,20 @@ describe('DocumentService', () => {
     const mockAssignee = new Users();
     mockAssignee.id = 'mockUserId';
 
-    const mockDocuments = [{ title: 'Document 1' }, { title: 'Document 2' }];
-    mockDocumentRepository.find.mockResolvedValueOnce(mockDocuments);
-
-    const result = await documentService.geAllDocuments(mockAssignee);
-
-    expect(result).toEqual(mockDocuments);
-    expect(mockDocumentRepository.find).toHaveBeenCalledWith({
-      where: { assignee: mockAssignee, isDeleted: false, enabled: true },
+    const mockDocuments = [
+      { title: 'Document 1', tracker: { id: '1' } },
+      { title: 'Document 2', tracker: { id: '2' } },
+    ];
+    mockDocumentRepository.createQueryBuilder = jest.fn().mockReturnValue({
+      innerJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValueOnce(mockDocuments),
     });
+    mockDeviceService.isDeviceActive.mockResolvedValue({ status: true });
+    const result = await documentService.geAllDocuments(mockAssignee);
+    expect(result).toEqual(mockDocuments);
   });
   it('should throw BadRequestException when the device is offline', async () => {
     const mockUser = new Users();
@@ -166,9 +172,7 @@ describe('DocumentService', () => {
 
     const mockDevice = { id: 'mockDeviceId' };
     mockDeviceService.getDeviceById.mockResolvedValueOnce(mockDevice);
-    mockDeviceService.isDeviceActive.mockResolvedValueOnce(true);
-
-    const mockDocument = new Document();
+    mockDeviceService.isDeviceActive.mockResolvedValueOnce({ status: true });
     mockDocumentRepository.create.mockReturnValueOnce(mockDocumentData);
     mockDocumentRepository.save.mockResolvedValue({
       ...mockDocumentData,
