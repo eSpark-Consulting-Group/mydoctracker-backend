@@ -207,6 +207,7 @@ export class DocumentService {
         lat: device.device.lat,
         lng: device.device.lng,
         state: device.device.state,
+        sentAt: device.device.sentAt,
         status: document.active ? 'active' : 'inactive',
       },
     };
