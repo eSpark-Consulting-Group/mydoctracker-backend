@@ -268,6 +268,22 @@ export class UsersService {
       })
       .getOne();
   }
+  async getAllEmployeesBySubsidiary(
+    subsidiaryId: string,
+    createdByOrAdmin: string,
+  ) {
+    return this.userRepositry
+      .createQueryBuilder('user')
+      .innerJoin('user.subsidiary', 'subsidiary')
+      .where('subsidiary.id = :subsidiaryId', { subsidiaryId })
+      .andWhere(
+        '(subsidiary.createdBy = :createdByOrAdmin OR subsidiary.admin = :createdByOrAdmin)',
+        {
+          createdByOrAdmin,
+        },
+      )
+      .getMany();
+  }
 
   save(user: Users) {
     return this.userRepositry.save(user);

@@ -28,3 +28,11 @@ export class AddEmployeeDTO extends SignupDTO {
 }
 
 export class EditEmployeeDTO extends UpdateProfileDTO {}
+export class SubsdiaryIdDTO {
+  @ApiProperty({
+    type: String,
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly subsidiary: string;
+}

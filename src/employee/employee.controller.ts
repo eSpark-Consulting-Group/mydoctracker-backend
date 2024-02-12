@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -17,7 +18,11 @@ import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { Roles } from 'src/auth/guard/roles-decorator';
 import { UserRoles, Users } from 'src/entities/User.entity';
-import { AddEmployeeDTO, EditEmployeeDTO } from './dto/employee-dto';
+import {
+  AddEmployeeDTO,
+  EditEmployeeDTO,
+  SubsdiaryIdDTO,
+} from './dto/employee-dto';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
@@ -42,7 +47,7 @@ export class EmployeeController {
       status: 'success',
     };
   }
-  
+
   @ApiBearerAuth()
   @Roles([UserRoles.CU])
   @Put(':id')
@@ -91,6 +96,24 @@ export class EmployeeController {
     });
     return {
       message: 'Employee has been deleted successfully!',
+      status: 'success',
+    };
+  }
+  @ApiBearerAuth()
+  @Roles([UserRoles.CU, UserRoles.ACU])
+  @Get(':subsidiary')
+  @HttpCode(200)
+  async getAllEmployeesBySubsidiary(
+    @CurrentUser() user: Users,
+    @Param() param: SubsdiaryIdDTO,
+  ) {
+    const data = await this.employeeService.getAllEmployeesBySubsidiary(
+      user,
+      param.subsidiary,
+    );
+    return {
+      data,
+      message: 'Employees have been fetched successfully!',
       status: 'success',
     };
   }
