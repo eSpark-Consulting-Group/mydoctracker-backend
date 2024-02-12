@@ -126,4 +126,7 @@ export class EmployeeService {
       throw new NotFoundException('Employee not found!');
     }
   }
+  async getAllEmployeesBySubsidiary(user: Users, subsidiaryId: string) {
+    return this.userService.getAllEmployeesBySubsidiary(subsidiaryId, user.id);
+  }
 }
