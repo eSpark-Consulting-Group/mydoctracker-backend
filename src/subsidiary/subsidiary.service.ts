@@ -63,4 +63,7 @@ export class SubsidiaryService {
       where: { company, createdBy: user },
     });
   }
+  save(subsidiary: Subsidiary) {
+    return this.subsidiaryRepositry.save(subsidiary);
+  }
 }
