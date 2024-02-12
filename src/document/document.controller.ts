@@ -56,7 +56,7 @@ export class DcoumentController {
   }
 
   @ApiBearerAuth()
-  @Roles([UserRoles.SU])
+  @Roles([UserRoles.SU, UserRoles.CU])
   @ApiOperation({
     summary: 'Add a Document',
   })
@@ -79,7 +79,10 @@ export class DcoumentController {
     @Body() reqData: AddDocumentDTO,
     @CurrentUser() user: Users,
   ) {
-    const data = await this.documentService.addDocument(user, reqData, file);
+    const data = await this.documentService.addDocument(user, {
+      ...reqData,
+      file,
+    });
     return {
       status: 'success',
       message: 'Document has been created successfully!',

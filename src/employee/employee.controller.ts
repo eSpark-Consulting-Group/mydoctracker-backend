@@ -42,7 +42,7 @@ export class EmployeeController {
       status: 'success',
     };
   }
-
+  
   @ApiBearerAuth()
   @Roles([UserRoles.CU])
   @Put(':id')
