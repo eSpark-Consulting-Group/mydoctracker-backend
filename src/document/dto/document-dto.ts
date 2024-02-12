@@ -101,6 +101,16 @@ export class AddDocumentDTO {
   @Min(1000)
   @Max(9999)
   readonly otp: number;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    example: 'Employee_id',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  readonly employeeId?: string;
 }
 export class EditDocumentDTO {
   @ApiProperty({

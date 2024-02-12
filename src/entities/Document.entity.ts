@@ -52,7 +52,8 @@ export class Document {
   @Column({ default: true })
   active: boolean;
 
-  @ManyToOne(() => Users, (user) => user.id)
+  @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'assignee' })
   assignee: Users;
 
   @Column({ type: 'json', default: null })

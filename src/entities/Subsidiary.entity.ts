@@ -25,4 +25,8 @@ export class Subsidiary {
   @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'createdBy' })
   createdBy: Users;
+
+  @ManyToOne(() => Users, { nullable: true })
+  @JoinColumn({ name: 'admin' })
+  admin: Users;
 }

@@ -1,12 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceService } from 'src/device/device.service';
 import { Document } from 'src/entities/Document.entity';
-import { Users } from 'src/entities/User.entity';
+import { UserRoles, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
@@ -16,6 +18,7 @@ import { OTPService } from 'src/otp/otp.service';
 import { OtpPurpose } from 'src/entities/otp.entity';
 import { EmailService } from 'src/utils/helpers/email';
 import { paginate, IPaginationOptions } from 'nestjs-typeorm-paginate';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class DocumentService {
@@ -28,6 +31,7 @@ export class DocumentService {
     private fileUploadService: CloudStorageService,
     private otpService: OTPService,
     private emailService: EmailService,
+    private userService: UsersService,
   ) {}
   async getCurrentUserDoc(id: string, assignee: Users) {
     const document = await this.documentRepositry.findOne({
@@ -46,58 +50,77 @@ export class DocumentService {
     return otp;
   }
 
-  async addDocument(
-    user: Users,
-    documentData: AddDocumentDTO,
-    file: Express.Multer.File,
-  ) {
-    const otpID = await this.otpService.verifyOTP(
-      user,
-      OtpPurpose.add_document,
-      documentData.otp,
-    );
-    const device = await this.deviceService.getDeviceById(
-      documentData.deviceId,
-    );
-    const isActive = await this.deviceService.isDeviceActive(device.id);
-    if (!isActive.status) {
-      throw new BadRequestException('Device is offline');
-    }
-    const newDocument = this.documentRepositry.create({
-      assignee: user,
-      creationDate: documentData.creationDate,
-      file: '',
-      title: documentData.title,
-      tracker: device,
-    });
-    if (documentData.fields) {
-      newDocument.meta = {
-        fields: JSON.parse(documentData.fields),
-      };
-    }
-    const document = await this.documentRepositry.save(newDocument);
-    if (file) {
-      const response = await this.fileUploadService.uploadDocumentFile(
-        file,
+  async addDocument(user: Users, documentData: AddDocumentDTO) {
+    try {
+      const file = documentData.file;
+      const employeeId = documentData.employeeId;
+      const otpID = await this.otpService.verifyOTP(
         user,
-        S3_ENUMS.docs,
+        OtpPurpose.add_document,
+        documentData.otp,
       );
-      const fileName = `${S3_ENUMS.URL}/${response.fileName}`;
-      document.file = fileName;
-      await this.documentRepositry.save(document);
+      const device = await this.deviceService.getDeviceById(
+        documentData.deviceId,
+      );
+      const isActive = await this.deviceService.isDeviceActive(device.id);
+      if (!isActive.status) {
+        throw new BadRequestException('Device is offline');
+      }
+      const newDocument = this.documentRepositry.create({
+        assignee: user,
+        creationDate: documentData.creationDate,
+        file: '',
+        title: documentData.title,
+        tracker: device,
+      });
+      if (employeeId) {
+        const employee = await this.userService.getEmployeeByCU({
+          createdBy: user.id,
+          userId: employeeId,
+        });
+        if (!employee) {
+          throw new NotFoundException('Employee not found!');
+        }
+        newDocument.assignee = employee;
+      } else if (user.role !== UserRoles.SU) {
+        throw new ForbiddenException(
+          "You're not allowd to add document for yourself",
+        );
+      }
+      if (documentData.fields) {
+        newDocument.meta = {
+          fields: JSON.parse(documentData.fields),
+        };
+      }
+      const document = await this.documentRepositry.save(newDocument);
+      if (file) {
+        const response = await this.fileUploadService.uploadDocumentFile(
+          file,
+          user,
+          S3_ENUMS.docs,
+        );
+        const fileName = `${S3_ENUMS.URL}/${response.fileName}`;
+        document.file = fileName;
+        await this.documentRepositry.save(document);
+      }
+      const documentHistory = this.documentHistoryRepositry.create({
+        type: document.type,
+        title: document.title,
+        creationDate: document.creationDate,
+        documentId: document.id,
+        file: document.file,
+        meta: document.meta,
+        document: document,
+      });
+      await this.documentHistoryRepositry.save(documentHistory);
+      await this.otpService.deleteOtp(otpID);
+      return document;
+    } catch (error) {
+      if (error.errno === 1062) {
+        throw new ConflictException('Device is already attached to a document');
+      }
+      throw error;
     }
-    const documentHistory = this.documentHistoryRepositry.create({
-      type: document.type,
-      title: document.title,
-      creationDate: document.creationDate,
-      documentId: document.id,
-      file: document.file,
-      meta: document.meta,
-      document: document,
-    });
-    await this.documentHistoryRepositry.save(documentHistory);
-    await this.otpService.deleteOtp(otpID);
-    return document;
   }
 
   async editDocument(

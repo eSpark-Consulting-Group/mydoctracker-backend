@@ -22,19 +22,21 @@ import {
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
 import { ErrorResponseBody } from 'src/utils/APIResponse';
 import { CurrentUser } from 'src/utils/decorators/current-user';
-import { Users } from 'src/entities/User.entity';
+import { UserRoles, Users } from 'src/entities/User.entity';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Roles } from 'src/auth/guard/roles-decorator';
+import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
 
 @ApiTags('Document')
 @Controller('document')
+@UseGuards(JwtGuard)
 export class DcoumentController {
   constructor(private documentService: DocumentService) {}
 
@@ -42,13 +44,8 @@ export class DcoumentController {
   @ApiOperation({
     summary: 'Get all documents',
   })
-  @UseGuards(JwtGuard)
   @Get('/')
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async getAllDocuments(@CurrentUser() user: Users) {
     const data = await this.documentService.geAllDocuments(user);
     return {
@@ -59,20 +56,12 @@ export class DcoumentController {
   }
 
   @ApiBearerAuth()
+  @Roles([UserRoles.SU, UserRoles.CU])
   @ApiOperation({
     summary: 'Add a Document',
   })
-  @UseGuards(JwtGuard)
   @Post('/')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: '',
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   async addDocument(
@@ -90,29 +79,23 @@ export class DcoumentController {
     @Body() reqData: AddDocumentDTO,
     @CurrentUser() user: Users,
   ) {
-    const data = await this.documentService.addDocument(user, reqData, file);
+    const data = await this.documentService.addDocument(user, {
+      ...reqData,
+      file,
+    });
     return {
       status: 'success',
       message: 'Document has been created successfully!',
       data,
     };
   }
-
+  @Roles([UserRoles.SU])
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get OTP for adding a  Document',
   })
-  @UseGuards(JwtGuard)
   @Get('otp')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: '',
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async generateOTP(@CurrentUser() user: Users) {
     await this.documentService.generateOTPForAddDoc(user);
     return {
@@ -125,21 +108,11 @@ export class DcoumentController {
   @ApiOperation({
     summary: 'Get Document history',
   })
-  @UseGuards(JwtGuard)
   @Get('/history/:id')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: '',
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
-  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
   async getDocumentHistory(
     @CurrentUser() user: Users,
-    @Param() id: { id: string },
+    @Param() id: ParamDTO,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
   ) {
@@ -156,10 +129,10 @@ export class DcoumentController {
   }
 
   @ApiBearerAuth()
+  @Roles([UserRoles.SU])
   @ApiOperation({
     summary: 'Edit a Document',
   })
-  @UseGuards(JwtGuard)
   @Put('/:id')
   @HttpCode(200)
   @ApiOkResponse({
@@ -170,7 +143,6 @@ export class DcoumentController {
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   async editDocument(
@@ -187,7 +159,7 @@ export class DcoumentController {
     file: Express.Multer.File,
     @Body() reqData: EditDocumentDTO,
     @CurrentUser() user: Users,
-    @Param() id: { id: string },
+    @Param() id: ParamDTO,
   ) {
     const data = await this.documentService.editDocument(
       user,
@@ -206,7 +178,6 @@ export class DcoumentController {
   @ApiOperation({
     summary: 'Delete a Document',
   })
-  @UseGuards(JwtGuard)
   @Delete('/:id')
   @HttpCode(200)
   @ApiOkResponse({
@@ -217,11 +188,7 @@ export class DcoumentController {
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
-  async deleteDocument(
-    @CurrentUser() user: Users,
-    @Param() id: { id: string },
-  ) {
+  async deleteDocument(@CurrentUser() user: Users, @Param() id: ParamDTO) {
     await this.documentService.deleteDocument(user, id.id);
     return {
       status: 'success',
@@ -232,18 +199,13 @@ export class DcoumentController {
   @ApiOperation({
     summary: 'Get Document By ID',
   })
-  @UseGuards(JwtGuard)
   @Get('/:id')
   @HttpCode(200)
   @ApiInternalServerErrorResponse({
     description: 'Internal server error',
     type: ErrorResponseBody,
   })
-  @ApiParam({ name: 'id', example: 'e1cb1cef-913e-4ca5-af16-0cdd4c4e05e2' })
-  async getDocumentById(
-    @CurrentUser() user: Users,
-    @Param() id: { id: string },
-  ) {
+  async getDocumentById(@CurrentUser() user: Users, @Param() id: ParamDTO) {
     const data = await this.documentService.getDocumentById(id.id, user);
     return {
       data,

@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Users } from 'src/entities/User.entity';
+import { UserRoles, Users } from 'src/entities/User.entity';
 import { SubsidiaryService } from 'src/subsidiary/subsidiary.service';
 import { AddEmployeeDTO, EditEmployeeDTO } from './dto/employee-dto';
 import { UsersService } from 'src/users/users.service';
@@ -47,22 +47,21 @@ export class EmployeeService {
         username,
         role,
       });
-      return this.userService.save(employee);
-    } catch (error) {
-      if (error.errno === 1062) {
-        const match = error?.sqlMessage?.match(/for key '(.*?)'/);
-        const keyName = match ? match[1] : 'unknown';
-        if (keyName === 'users.IDX_fe0bb3f6520ee0469504521e71') {
-          throw new ConflictException('Username already exists.');
-        } else if (keyName === 'users.IDX_97672ac88f789774dd47f7c8be') {
-          throw new ConflictException('Email already exists.');
-        } else if (keyName === 'users.IDX_6c71f479b6fd0e0f7e1b8d855e') {
-          throw new ConflictException('Contact number already exists.');
-        } else {
+
+      const newEmployee = await this.userService.save(employee);
+      if (role === UserRoles.ACU) {
+        if (foundSubsidiary.admin) {
           throw new ConflictException(
-            'Duplicate entry for a unique constraint.',
+            "There's already an admin for this subsidiary",
           );
         }
+        foundSubsidiary.admin = newEmployee;
+        await this.subsidiaryService.save(foundSubsidiary);
+      }
+      return newEmployee;
+    } catch (error) {
+      if (error.errno === 1062) {
+        this.userService.duplicateErrorHandler(error);
       } else {
         throw error;
       }
