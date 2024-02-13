@@ -3,9 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
   Ip,
-  ParseFilePipeBuilder,
   Post,
   Put,
   Query,
@@ -51,6 +49,7 @@ import { Users } from 'src/entities/User.entity';
 import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
 import { STRINGS } from 'enum';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { fileValidator } from 'src/utils/helpers/file.validation';
 
 @Controller(STRINGS.USERS_ROUTE)
 @ApiTags('Users')
@@ -159,14 +158,10 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('profilePicture'))
   async updateProfile(
     @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /^image\/(jpeg|jpg|png)$/,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-          fileIsRequired: false,
-        }),
+      fileValidator({
+        fileIsRequired: false,
+        fileType: /^image\/(jpeg|jpg|png)$/,
+      }),
     )
     file: Express.Multer.File,
     @Body() reqData: UpdateProfileDTO,
