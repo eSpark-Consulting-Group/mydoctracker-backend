@@ -4,9 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
-  ParseFilePipeBuilder,
   Post,
   Put,
   UploadedFile,
@@ -26,6 +24,7 @@ import {
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
+import { fileValidator } from 'src/utils/helpers/file.validation';
 
 @ApiTags('Employee')
 @Controller('employee')
@@ -56,14 +55,10 @@ export class EmployeeController {
   @UseInterceptors(FileInterceptor('profilePicture'))
   async editEmployeeDetails(
     @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /^image\/(jpeg|jpg|png)$/,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-          fileIsRequired: false,
-        }),
+      fileValidator({
+        fileIsRequired: false,
+        fileType: /^image\/(jpeg|jpg|png)$/,
+      }),
     )
     file: Express.Multer.File,
     @Body() reqData: EditEmployeeDTO,

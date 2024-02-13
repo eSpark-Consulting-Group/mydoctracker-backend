@@ -235,4 +235,15 @@ export class DocumentService {
       },
     };
   }
+
+  async getDocumentsByEmployee(employeeId: string, currentUser: Users) {
+    const employee = await this.userService.getEmployeeByCUandACU(
+      employeeId,
+      currentUser.id,
+    );
+    if (!employee) {
+      throw new NotFoundException('Employee not found!');
+    }
+    return this.documentRepositry.find({ where: { assignee: employee } });
+  }
 }

@@ -285,6 +285,20 @@ export class UsersService {
       .getMany();
   }
 
+  async getEmployeeByCUandACU(employeeId: string, createdByOrAdmin: string) {
+    return this.userRepositry
+      .createQueryBuilder('user')
+      .innerJoin('user.subsidiary', 'subsidiary')
+      .where('user.id = :userId', { userId: employeeId })
+      .andWhere(
+        '(subsidiary.createdBy = :createdByOrAdmin OR subsidiary.admin = :createdByOrAdmin)',
+        {
+          createdByOrAdmin,
+        },
+      )
+      .getOne();
+  }
+
   save(user: Users) {
     return this.userRepositry.save(user);
   }

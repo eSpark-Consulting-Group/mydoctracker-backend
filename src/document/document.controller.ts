@@ -5,9 +5,7 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
-  ParseFilePipeBuilder,
   ParseIntPipe,
   Post,
   Put,
@@ -19,8 +17,6 @@ import {
 import {
   ApiBearerAuth,
   ApiConsumes,
-  ApiInternalServerErrorResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -33,6 +29,7 @@ import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/guard/roles-decorator';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
+import { fileValidator } from 'src/utils/helpers/file.validation';
 
 @ApiTags('Document')
 @Controller('document')
@@ -66,14 +63,10 @@ export class DcoumentController {
   @UseInterceptors(FileInterceptor('file'))
   async addDocument(
     @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /^image\/(jpeg|jpg|png)$/,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-          fileIsRequired: true,
-        }),
+      fileValidator({
+        fileIsRequired: true,
+        fileType: /^image\/(jpeg|jpg|png)$/,
+      }),
     )
     file: Express.Multer.File,
     @Body() reqData: AddDocumentDTO,
@@ -135,26 +128,14 @@ export class DcoumentController {
   })
   @Put('/:id')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: '',
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   async editDocument(
     @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /^image\/(jpeg|jpg|png)$/,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-          fileIsRequired: false,
-        }),
+      fileValidator({
+        fileIsRequired: false,
+        fileType: /^image\/(jpeg|jpg|png)$/,
+      }),
     )
     file: Express.Multer.File,
     @Body() reqData: EditDocumentDTO,
@@ -180,14 +161,6 @@ export class DcoumentController {
   })
   @Delete('/:id')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: '',
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async deleteDocument(@CurrentUser() user: Users, @Param() id: ParamDTO) {
     await this.documentService.deleteDocument(user, id.id);
     return {
@@ -195,16 +168,32 @@ export class DcoumentController {
       message: 'Document has been deleted successfully!',
     };
   }
+
+  @ApiBearerAuth()
+  @Roles([UserRoles.CU, UserRoles.ACU])
+  @ApiOperation({
+    summary: 'Get All Documents for an Employee using Employee ID',
+  })
+  @Get('/employee/:id')
+  @HttpCode(200)
+  async getDocumentsByEmployee(
+    @CurrentUser() user: Users,
+    @Param() id: ParamDTO,
+  ) {
+    const data = await this.documentService.getDocumentsByEmployee(id.id, user);
+    return {
+      data,
+      status: 'success',
+      message: 'Documents have been fetched successfully!',
+    };
+  }
+
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get Document By ID',
   })
   @Get('/:id')
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async getDocumentById(@CurrentUser() user: Users, @Param() id: ParamDTO) {
     const data = await this.documentService.getDocumentById(id.id, user);
     return {
