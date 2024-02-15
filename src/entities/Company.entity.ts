@@ -2,7 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
 } from 'typeorm';
 import { Users } from './User.entity';
@@ -21,7 +21,7 @@ export class Company {
   @Column({ type: 'varchar', length: 20, unique: true })
   contact: string;
 
-  @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
+  @OneToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user' })
   user: Users;
 }
