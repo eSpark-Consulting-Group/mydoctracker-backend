@@ -75,7 +75,7 @@ describe('EmployeeService', () => {
   describe('addEmployee', () => {
     it('should add an employee successfully', async () => {
       jest
-        .spyOn(subsidiaryService, 'getSubsidiaryById')
+        .spyOn(subsidiaryService, 'getSubsidiaryByOwner')
         .mockResolvedValueOnce(mockSubsidiary);
       jest.spyOn(userService, 'create').mockReturnValueOnce(mockUser);
       jest.spyOn(userService, 'save').mockResolvedValue(mockUser);
@@ -87,7 +87,7 @@ describe('EmployeeService', () => {
     });
     it('should throw NotFoundException for non-existing subsidiary', async () => {
       jest
-        .spyOn(subsidiaryService, 'getSubsidiaryById')
+        .spyOn(subsidiaryService, 'getSubsidiaryByOwner')
         .mockResolvedValueOnce(undefined);
       await expect(
         employeeService.addEmployee(mockUser, addEmployeeDTO),
@@ -95,7 +95,7 @@ describe('EmployeeService', () => {
     });
     it('should throw ConflictException for duplicate entry', async () => {
       jest
-        .spyOn(subsidiaryService, 'getSubsidiaryById')
+        .spyOn(subsidiaryService, 'getSubsidiaryByOwner')
         .mockResolvedValueOnce(mockSubsidiary);
       jest.spyOn(userService, 'create').mockReturnValueOnce(mockUser);
       jest.spyOn(userService, 'save').mockImplementation(() => {

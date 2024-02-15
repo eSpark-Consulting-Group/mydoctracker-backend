@@ -43,9 +43,10 @@ export class UsersService {
       throw new ConflictException('Duplicate entry for a unique constraint.');
     }
   }
-  getUserById(id: string) {
+  getUserDetails(id: string) {
     return this.userRepositry.findOne({
       where: { id },
+      relations: ['subsidiary'],
     });
   }
   async signupSingleUser(newUser: SignupDTO) {

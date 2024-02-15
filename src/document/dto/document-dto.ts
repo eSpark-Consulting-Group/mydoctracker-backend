@@ -159,5 +159,5 @@ export class EditDocumentDTO {
     format: 'binary',
   })
   @IsOptional()
-  readonly file: File;
+  readonly file: Express.Multer.File;
 }

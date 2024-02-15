@@ -12,8 +12,11 @@ export class SubsidiaryService {
     private subsidiaryRepositry: Repository<Subsidiary>,
     private companyService: CompanyService,
   ) {}
-  getSubsidiaryById(user: Users, id: string) {
+  getSubsidiaryByOwner(user: Users, id: string) {
     return this.subsidiaryRepositry.findOne({ where: { id, createdBy: user } });
+  }
+  getSubsidiaryById(id: string) {
+    return this.subsidiaryRepositry.findOne({ where: { id } });
   }
   async createSubsidiary(
     user: Users,
