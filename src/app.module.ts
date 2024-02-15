@@ -14,6 +14,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AdminModule } from './admin/admin.module';
 import { SubsidiaryModule } from './subsidiary/subsidiary.module';
 import { EmployeeModule } from './employee/employee.module';
+import { RequestModule } from './request/request.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { EmployeeModule } from './employee/employee.module';
     DocumentModule,
     SubsidiaryModule,
     EmployeeModule,
+    RequestModule,
   ],
   controllers: [AppController],
   providers: [

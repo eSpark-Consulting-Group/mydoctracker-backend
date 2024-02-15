@@ -29,7 +29,7 @@ export class EmployeeService {
         subsidiary,
         username,
       } = data;
-      const foundSubsidiary = await this.subsidiaryService.getSubsidiaryById(
+      const foundSubsidiary = await this.subsidiaryService.getSubsidiaryByOwner(
         user,
         subsidiary,
       );
