@@ -94,6 +94,7 @@ describe('UserService', () => {
       password: 'Password123!',
       contact: '1234567890',
       rememberMe: true,
+      role: UserRoles.SU,
     };
     mockUserRepository.create.mockReturnValue({
       ...newUser,
@@ -138,6 +139,7 @@ describe('UserService', () => {
       password: '123',
       rememberMe: true,
       username: 'abc',
+      role: UserRoles.SU,
       // Provide your test data here
     };
 
