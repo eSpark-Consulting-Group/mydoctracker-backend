@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDefined,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -12,10 +13,17 @@ import {
   MinLength,
 } from 'class-validator';
 import { CONTACT_REGEX, PASSWORD_REGEX, USERNAME_REGEX } from 'enum';
+import { UserRoles } from 'src/entities/User.entity';
 
-const invalidContactMsg = "Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890"
-const invalidUsernameMsg = "Username should only contain alphanumeric characters (letters and numbers), Small Letters, Underscores (_) and hyphens (-)."
-
+const invalidContactMsg =
+  'Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890';
+const invalidUsernameMsg =
+  'Username should only contain alphanumeric characters (letters and numbers), Small Letters, Underscores (_) and hyphens (-).';
+  
+enum SignupRoles {
+  SU = UserRoles.SU,
+  CU = UserRoles.CU,
+}
 export class SignupDTO {
   @ApiProperty({
     type: String,
@@ -74,8 +82,17 @@ export class SignupDTO {
   @IsString()
   @IsNotEmpty()
   @IsDefined()
-  @Matches(CONTACT_REGEX, { message: invalidContactMsg, })
+  @Matches(CONTACT_REGEX, { message: invalidContactMsg })
   readonly contact: string;
+
+  @ApiProperty({
+    type: String,
+    example: SignupRoles.SU,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEnum(SignupRoles)
+  readonly role: UserRoles;
 
   @ApiProperty({
     type: String,
@@ -161,7 +178,6 @@ export class ForgotPasswordDTO {
   @IsEmail()
   readonly email: string;
 
-
   @ApiProperty({
     type: String,
     example: 'abc.com',
@@ -190,10 +206,10 @@ export class UpdateProfileDTO {
 
   @ApiProperty({ type: String, required: false })
   @IsDefined()
-  @Matches(CONTACT_REGEX, { message: invalidContactMsg, })
+  @Matches(CONTACT_REGEX, { message: invalidContactMsg })
   @IsOptional()
   readonly contact?: string;
-  
+
   @ApiProperty({
     required: false,
     type: 'string',

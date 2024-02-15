@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserStatus, UserRoles, Users } from 'src/entities/User.entity';
+import { UserStatus, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
@@ -49,7 +49,7 @@ export class UsersService {
       relations: ['subsidiary'],
     });
   }
-  async signupSingleUser(newUser: SignupDTO) {
+  async signup(newUser: SignupDTO) {
     try {
       const createdUser = this.userRepositry.create({
         firstName: newUser.firstName,
@@ -58,7 +58,7 @@ export class UsersService {
         username: newUser.username,
         email: newUser.email,
         hashedPassword: this.hashPassword(newUser.password),
-        role: UserRoles.SU,
+        role: newUser.role,
       });
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };
