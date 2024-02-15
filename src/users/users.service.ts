@@ -25,14 +25,28 @@ export class UsersService {
     private fileUploadService: CloudStorageService,
     private readonly sendGridClient: EmailService,
   ) {}
-  private hashPassword(password: string) {
+  hashPassword(password: string) {
     const salt = bcrypt.genSaltSync(5);
     const hashedPassowrd: string = bcrypt.hashSync(password, salt);
     return hashedPassowrd;
   }
-  getUserById(id: string) {
+  duplicateErrorHandler(error) {
+    const match = error?.sqlMessage?.match(/for key '(.*?)'/);
+    const keyName = match ? match[1] : 'unknown';
+    if (keyName === 'users.IDX_fe0bb3f6520ee0469504521e71') {
+      throw new ConflictException('Username already exists.');
+    } else if (keyName === 'users.IDX_97672ac88f789774dd47f7c8be') {
+      throw new ConflictException('Email already exists.');
+    } else if (keyName === 'users.IDX_6c71f479b6fd0e0f7e1b8d855e') {
+      throw new ConflictException('Contact number already exists.');
+    } else {
+      throw new ConflictException('Duplicate entry for a unique constraint.');
+    }
+  }
+  getUserDetails(id: string) {
     return this.userRepositry.findOne({
       where: { id },
+      relations: ['subsidiary'],
     });
   }
   async signupUser(newUser: SignupDTO) {
@@ -59,19 +73,7 @@ export class UsersService {
       return { user, token };
     } catch (error) {
       if (error.errno === 1062) {
-        const match = error?.sqlMessage?.match(/for key '(.*?)'/);
-        const keyName = match ? match[1] : 'unknown';
-        if (keyName === 'users.IDX_fe0bb3f6520ee0469504521e71') {
-          throw new ConflictException('Username already exists.');
-        } else if (keyName === 'users.IDX_97672ac88f789774dd47f7c8be') {
-          throw new ConflictException('Email already exists.');
-        } else if (keyName === 'users.IDX_6c71f479b6fd0e0f7e1b8d855e') {
-          throw new ConflictException('Contact number already exists.');
-        } else {
-          throw new ConflictException(
-            'Duplicate entry for a unique constraint.',
-          );
-        }
+        this.duplicateErrorHandler(error);
       } else {
         throw error;
       }
@@ -244,22 +246,69 @@ export class UsersService {
       return updatedUser;
     } catch (error) {
       if (error.errno === 1062) {
-        const match = error?.sqlMessage?.match(/for key '(.*?)'/);
-        const keyName = match ? match[1] : 'unknown';
-        if (keyName === 'users.IDX_fe0bb3f6520ee0469504521e71') {
-          throw new ConflictException('Username already exists.');
-        } else if (keyName === 'users.IDX_97672ac88f789774dd47f7c8be') {
-          throw new ConflictException('Email already exists.');
-        } else if (keyName === 'users.IDX_6c71f479b6fd0e0f7e1b8d855e') {
-          throw new ConflictException('Contact number already exists.');
-        } else {
-          throw new ConflictException(
-            'Duplicate entry for a unique constraint.',
-          );
-        }
+        this.duplicateErrorHandler(error);
       } else {
         throw error;
       }
     }
+  }
+
+  async getEmployeeByCU({
+    userId,
+    createdBy,
+  }: {
+    userId: string;
+    createdBy: string;
+  }) {
+    return this.userRepositry
+      .createQueryBuilder('user')
+      .innerJoin('user.subsidiary', 'subsidiary')
+      .where('user.id = :id', { id: userId })
+      .andWhere('subsidiary.createdBy = :createdBy', {
+        createdBy,
+      })
+      .getOne();
+  }
+  async getAllEmployeesBySubsidiary(
+    subsidiaryId: string,
+    createdByOrAdmin: string,
+  ) {
+    return this.userRepositry
+      .createQueryBuilder('user')
+      .innerJoin('user.subsidiary', 'subsidiary')
+      .where('subsidiary.id = :subsidiaryId', { subsidiaryId })
+      .andWhere(
+        '(subsidiary.createdBy = :createdByOrAdmin OR subsidiary.admin = :createdByOrAdmin)',
+        {
+          createdByOrAdmin,
+        },
+      )
+      .getMany();
+  }
+
+  async getEmployeeByCUandACU(employeeId: string, createdByOrAdmin: string) {
+    return this.userRepositry
+      .createQueryBuilder('user')
+      .innerJoin('user.subsidiary', 'subsidiary')
+      .where('user.id = :userId', { userId: employeeId })
+      .andWhere(
+        '(subsidiary.createdBy = :createdByOrAdmin OR subsidiary.admin = :createdByOrAdmin)',
+        {
+          createdByOrAdmin,
+        },
+      )
+      .getOne();
+  }
+
+  save(user: Users) {
+    return this.userRepositry.save(user);
+  }
+
+  create(user: Object) {
+    return this.userRepositry.create(user);
+  }
+
+  async delete(id: string) {
+    return this.userRepositry.delete(id);
   }
 }

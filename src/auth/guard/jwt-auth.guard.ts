@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { STRINGS } from 'enum';
@@ -10,20 +11,23 @@ import { Request } from 'express';
 import { UserStatus } from 'src/entities/User.entity';
 import { UsersService } from 'src/users/users.service';
 import { APIException } from 'src/utils/APIResponse';
+import { Reflector } from '@nestjs/core';
+import { Roles } from './roles-decorator';
 
 @Injectable()
 export class JwtGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private userSerive: UsersService,
-  ) { }
+    private reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-    const changePassPath = `/${STRINGS.USERS_ROUTE}/${STRINGS.CHANGE_PASSWORD_ROUTE}`
+    const changePassPath = `/${STRINGS.USERS_ROUTE}/${STRINGS.CHANGE_PASSWORD_ROUTE}`;
     if (request.path === changePassPath && request.query?.token) {
-      return true
+      return true;
     }
     if (!token) {
       throw new APIException(
@@ -38,9 +42,9 @@ export class JwtGuard implements CanActivate {
     const payload = await this.jwtService.verifyAsync(token, {
       secret: process.env.JWT_SECRET,
     });
-    // Attach the payload to the request's user property
-    request.user = await this.userSerive.getUserById(payload.id);
-    if (!request.user)
+    const user = await this.userSerive.getUserDetails(payload.id);
+    request.user = user;
+    if (!user)
       throw new APIException(
         {
           status: 'error',
@@ -57,7 +61,11 @@ export class JwtGuard implements CanActivate {
         },
         HttpStatus.UNAUTHORIZED,
       );
-    return true;
+    const roles = this.reflector.get(Roles, context.getHandler()) || [];
+    if (roles.length === 0 || roles.includes(user.role)) {
+      return true;
+    }
+    throw new UnauthorizedException("You're not allowed to use this resource");
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

@@ -13,26 +13,11 @@ import {
 import { DeviceService } from './device.service';
 import {
   ApiBearerAuth,
-  ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  DeviceNotFoundResponseBody,
-  ErrorResponseBody,
-} from 'src/utils/APIResponse';
-import {
-  AddGeofenceResponseDto,
-  AddTelemetryResponseDto,
-  DeleteGeofenceResponseDto,
-  EditGeofenceResponseDto,
-  GetGeofenceResponseDto,
-  GetGeofencesResponseDto,
-} from './dto/response-dto';
 import {
   AddTelemetryDTO,
   DeviceMacDTO,
@@ -57,10 +42,6 @@ export class DeviceController {
   })
   @Get('firmware/list')
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async getFirmwaresList() {
     const data = await this.deviceService.getFirmwaresList();
     return {
@@ -77,10 +58,6 @@ export class DeviceController {
   @UseGuards(ApiKeyAuthGuard, DeviceAuthGuard)
   @Get('firmware/latest')
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async getLatestFirmware(@Headers() headers: DeviceMacDTO) {
     const data = await this.deviceService.getLatestFirmware();
     return {
@@ -90,7 +67,6 @@ export class DeviceController {
     };
   }
 
-
   @ApiSecurity('key')
   @ApiOperation({
     summary: 'Send device telemetry',
@@ -98,18 +74,6 @@ export class DeviceController {
   @UseGuards(ApiKeyAuthGuard, DeviceAuthGuard)
   @Post('telemetry')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: AddTelemetryResponseDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Not found',
-    type: DeviceNotFoundResponseBody,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async addTelemetry(
     @Body() reqData: AddTelemetryDTO,
     @CurrentDevice() device: DeviceInventory,
@@ -129,18 +93,6 @@ export class DeviceController {
   @UseGuards(ApiKeyAuthGuard, DeviceAuthGuard)
   @Post('info')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: AddTelemetryResponseDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Not found',
-    type: DeviceNotFoundResponseBody,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async getDeviceInfo(
     @Headers() headers: DeviceMacDTO,
     @CurrentDevice() device: DeviceInventory,
@@ -160,14 +112,6 @@ export class DeviceController {
   @UseGuards(ApiKeyAuthGuard)
   @Post('fake/:macaddress')
   @HttpCode(200)
-  @ApiNotFoundResponse({
-    description: 'Not found',
-    type: DeviceNotFoundResponseBody,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async addFakeDevice(
     @Param() param: DeviceMacDTO,
     @Body() reqData: FakeDeviceDTO,
@@ -190,14 +134,6 @@ export class DeviceController {
   @UseGuards(JwtGuard)
   @Post('geofence/:documentId')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: AddGeofenceResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiParam({
     name: 'documentId',
     example: '',
@@ -225,14 +161,6 @@ export class DeviceController {
   @UseGuards(JwtGuard)
   @Put('geofence/:documentId')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: EditGeofenceResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiParam({
     name: 'documentId',
     example: '',
@@ -261,14 +189,6 @@ export class DeviceController {
   @UseGuards(JwtGuard)
   @Get('geofence/:documentId')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: GetGeofencesResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiParam({
     name: 'documentId',
     example: '',
@@ -295,14 +215,6 @@ export class DeviceController {
   @UseGuards(JwtGuard)
   @Delete('geofence/:documentId/:geofenceId')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: DeleteGeofenceResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiParam({
     name: 'documentId',
     example: '',
@@ -329,14 +241,6 @@ export class DeviceController {
   @UseGuards(JwtGuard)
   @Get('geofence/:documentId/:geofenceId')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: GetGeofenceResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiParam({
     name: 'documentId',
     example: '',

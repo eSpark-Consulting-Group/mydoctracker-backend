@@ -1,10 +1,9 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
-  HttpStatus,
   Ip,
-  ParseFilePipeBuilder,
   Post,
   Put,
   Query,
@@ -50,6 +49,7 @@ import { Users } from 'src/entities/User.entity';
 import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
 import { STRINGS } from 'enum';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { fileValidator } from 'src/utils/helpers/file.validation';
 
 @Controller(STRINGS.USERS_ROUTE)
 @ApiTags('Users')
@@ -158,14 +158,10 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('profilePicture'))
   async updateProfile(
     @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /^image\/(jpeg|jpg|png)$/,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-          fileIsRequired: false,
-        }),
+      fileValidator({
+        fileIsRequired: false,
+        fileType: /^image\/(jpeg|jpg|png)$/,
+      }),
     )
     file: Express.Multer.File,
     @Body() reqData: UpdateProfileDTO,
@@ -204,6 +200,25 @@ export class UsersController {
     return {
       status: 'success',
       message: 'Email has been sent for password reset!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get User Info',
+  })
+  @UseGuards(JwtGuard)
+  @Get('/info')
+  @HttpCode(200)
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error',
+    type: ErrorResponseBody,
+  })
+  getUserInfo(@CurrentUser() user: Users) {
+    return {
+      status: 'success',
+      message: 'User info has been fetched successfully!',
+      data: user,
     };
   }
 }
