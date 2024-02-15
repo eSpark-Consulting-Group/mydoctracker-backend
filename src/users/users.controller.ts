@@ -16,11 +16,8 @@ import { UsersService } from './users.service';
 import {
   ApiBearerAuth,
   ApiConsumes,
-  ApiInternalServerErrorResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiQuery,
-  ApiResponse,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
@@ -31,18 +28,7 @@ import {
   SignupDTO,
   UpdateProfileDTO,
 } from './dto/users-dto';
-import {
-  APIResponseType,
-  ErrorResponseBody,
-  NotFoundResponseBody,
-} from 'src/utils/APIResponse';
-import {
-  ChangePasswordResponseDto,
-  ForgotPasswordResponseDto,
-  SigninResponseDto,
-  SingupResponseDto,
-  UpdateProfileResponseDto,
-} from './dto/response-dto';
+import { APIResponseType } from 'src/utils/APIResponse';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/User.entity';
@@ -62,16 +48,8 @@ export class UsersController {
   })
   @Post('/signup')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: SingupResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async signup(@Body() reqData: SignupDTO) {
-    const data = await this.userService.signupUser(reqData);
+    const data = await this.userService.signup(reqData);
     return {
       status: 'success',
       message: 'Your account has been created successfully!',
@@ -85,14 +63,6 @@ export class UsersController {
   })
   @Post('/signin')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: SigninResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async signin(@Body() reqData: SigninDTO) {
     const data = await this.userService.signin(reqData);
     return {
@@ -109,23 +79,10 @@ export class UsersController {
     description:
       'Facilitates the password change process for a specific user identified by "username". Accepts "ChangePasswordDTO" containing old and new password details for validation. Utilizes the "UserService.changePassword" method to update the user password securely, requiring correct authentication before modifying the password data. The endpoint responds with a "status" indicating success upon a successful password change. It ensures security and data integrity by enforcing the password change only for the authenticated user. Failed password change attempts prompt relevant error responses or appropriate status codes. This endpoint is crucial for ensuring user account security and password management.',
   })
-  @ApiResponse({
-    description: 'Not found',
-    type: NotFoundResponseBody,
-    status: 404,
-  })
   @UseGuards(ApiKeyAuthGuard, JwtGuard)
   @ApiQuery({ name: 'token', required: false })
   @Put(`${STRINGS.CHANGE_PASSWORD_ROUTE}`)
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: ChangePasswordResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   async changePassword(
     @Body() requestData: ChangePasswordDTO,
     @CurrentUser() user: Users,
@@ -146,14 +103,6 @@ export class UsersController {
   @UseGuards(JwtGuard)
   @Put('/update')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: UpdateProfileResponseDto,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('profilePicture'))
   async updateProfile(
@@ -182,10 +131,6 @@ export class UsersController {
   })
   @Post('/password/forget')
   @HttpCode(200)
-  @ApiOkResponse({
-    description: 'Successful response',
-    type: ForgotPasswordResponseDto,
-  })
   async forgotPassword(
     @Body() reqData: ForgotPasswordDTO,
     @Ip() ip: string,
@@ -210,10 +155,6 @@ export class UsersController {
   @UseGuards(JwtGuard)
   @Get('/info')
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   getUserInfo(@CurrentUser() user: Users) {
     return {
       status: 'success',

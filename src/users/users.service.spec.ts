@@ -104,7 +104,7 @@ describe('UserService', () => {
       id: '123',
     });
     mockJwtService.signAsync.mockResolvedValue('mockedToken');
-    const result = await userService.signupSingleUser(newUser);
+    const result = await userService.signup(newUser);
     expect(result).toHaveProperty('user');
     expect(result).toHaveProperty('token');
     expect(mockUserRepository.create).toHaveBeenCalledWith({
@@ -150,7 +150,7 @@ describe('UserService', () => {
     });
 
     // Call the signupSingleUser method and expect it to throw a ConflictException
-    await expect(userService.signupSingleUser(newUser)).rejects.toThrowError(
+    await expect(userService.signup(newUser)).rejects.toThrowError(
       ConflictException,
     );
   });
