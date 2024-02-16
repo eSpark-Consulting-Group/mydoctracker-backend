@@ -9,14 +9,8 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiInternalServerErrorResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SubsidiaryService } from './subsidiary.service';
-import { ErrorResponseBody } from 'src/utils/APIResponse';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { UserRoles, Users } from 'src/entities/User.entity';
 import { CreateSubsidiaryDTO, ParamDTO } from './dto/subsidiary-dto';
@@ -28,25 +22,16 @@ import { Roles } from 'src/auth/guard/roles-decorator';
 @Controller('subsidiary')
 export class SubsidiaryController {
   constructor(private readonly subsidiaryService: SubsidiaryService) {}
-  @ApiOperation({ summary: 'Add Subsidiary By Company ID' })
+  @ApiOperation({ summary: 'Add Subsidiary' })
   @ApiBearerAuth()
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @Roles([UserRoles.CU])
-  @Post(':id')
+  @Post('')
   async createSubsidiary(
     @CurrentUser() user: Users,
     @Body() reqBody: CreateSubsidiaryDTO,
-    @Param() param: ParamDTO,
   ) {
-    const data = await this.subsidiaryService.createSubsidiary(
-      user,
-      reqBody,
-      param.id,
-    );
+    const data = await this.subsidiaryService.createSubsidiary(user, reqBody);
     return {
       status: 'success',
       message: 'Subsidiary has been created successfully!',
@@ -55,24 +40,14 @@ export class SubsidiaryController {
   }
 
   @ApiOperation({
-    summary: 'Get All Subsidiaries By Company ID',
+    summary: 'Get All Subsidiaries',
   })
   @ApiBearerAuth()
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @Roles([UserRoles.CU])
-  @Get(':id')
-  async getAllSubsidiariesByCompany(
-    @CurrentUser() user: Users,
-    @Param() param: ParamDTO,
-  ) {
-    const data = await this.subsidiaryService.getAllSubsidiariesByCompany(
-      param.id,
-      user,
-    );
+  @Get('')
+  async getAllSubsidiaries(@CurrentUser() user: Users) {
+    const data = await this.subsidiaryService.getAllSubsidiaries(user);
     return {
       data,
       status: 'success',
@@ -83,10 +58,6 @@ export class SubsidiaryController {
   @ApiOperation({ summary: 'Edit Subsidiary By Subsidiary ID' })
   @ApiBearerAuth()
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @Roles([UserRoles.CU])
   @Put(':id')
   async editSubsidiary(
@@ -109,10 +80,6 @@ export class SubsidiaryController {
   @ApiOperation({ summary: 'Delete Subsidiary By Subsidiary ID' })
   @ApiBearerAuth()
   @HttpCode(200)
-  @ApiInternalServerErrorResponse({
-    description: 'Internal server error',
-    type: ErrorResponseBody,
-  })
   @Roles([UserRoles.CU])
   @Delete(':id')
   async deleteSubsidiary(@CurrentUser() user: Users, @Param() param: ParamDTO) {

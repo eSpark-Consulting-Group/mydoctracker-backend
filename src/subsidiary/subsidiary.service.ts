@@ -18,14 +18,10 @@ export class SubsidiaryService {
   getSubsidiaryById(id: string) {
     return this.subsidiaryRepositry.findOne({ where: { id } });
   }
-  async createSubsidiary(
-    user: Users,
-    data: CreateSubsidiaryDTO,
-    companyId: string,
-  ) {
-    const company = await this.companyService.getCompanyById(companyId, user);
+  async createSubsidiary(user: Users, data: CreateSubsidiaryDTO) {
+    const company = await this.companyService.getCurrentUserCompany(user);
     if (!company) {
-      throw new NotFoundException('Company not found!');
+      throw new NotFoundException('Please create a company first!');
     }
     const newSubsidiary = this.subsidiaryRepositry.create({
       company,
@@ -57,8 +53,8 @@ export class SubsidiaryService {
       throw new NotFoundException('Subsidiary not found!');
     }
   }
-  async getAllSubsidiariesByCompany(id: string, user: Users) {
-    const company = await this.companyService.getCompanyById(id, user);
+  async getAllSubsidiaries(user: Users) {
+    const company = await this.companyService.getCurrentUserCompany(user);
     if (!company) {
       throw new NotFoundException('Company not found!');
     }

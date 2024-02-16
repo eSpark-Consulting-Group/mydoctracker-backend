@@ -191,7 +191,7 @@ describe('SubsidiaryService', () => {
         ] as Subsidiary[]);
 
       // Execute the service method
-      const result = await subsidiaryService.getAllSubsidiariesByCompany(
+      const result = await subsidiaryService.getAllSubsidiaries(
         mockCompany.id,
         mockUser,
       );
@@ -221,7 +221,7 @@ describe('SubsidiaryService', () => {
 
       // Execute the service method and expect it to throw NotFoundException
       await expect(
-        subsidiaryService.getAllSubsidiariesByCompany(companyId, user),
+        subsidiaryService.getAllSubsidiaries(companyId, user),
       ).rejects.toThrow(NotFoundException);
 
       // Assertions
