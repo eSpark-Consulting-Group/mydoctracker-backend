@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceService } from 'src/device/device.service';
@@ -55,7 +56,7 @@ export class DocumentService {
       const file = documentData.file;
       const employeeId = documentData.employeeId;
       if (employeeId && user.role === UserRoles.SU) {
-        throw new ForbiddenException('You cannot add an employee');
+        throw new UnauthorizedException('You cannot add document for an employee');
       }
       const otpID = await this.otpService.verifyOTP(
         user,
