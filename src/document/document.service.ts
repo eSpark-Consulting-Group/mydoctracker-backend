@@ -56,7 +56,9 @@ export class DocumentService {
       const file = documentData.file;
       const employeeId = documentData.employeeId;
       if (employeeId && user.role === UserRoles.SU) {
-        throw new UnauthorizedException('You cannot add document for an employee');
+        throw new UnauthorizedException(
+          'You cannot add document for an employee',
+        );
       }
       const otpID = await this.otpService.verifyOTP(
         user,
@@ -127,13 +129,9 @@ export class DocumentService {
     }
   }
 
-  async editDocument(
-    user: Users,
-    documentData: EditDocumentDTO,
-    file: Express.Multer.File,
-    id: string,
-  ) {
+  async editDocument(user: Users, documentData: EditDocumentDTO, id: string) {
     const document = await this.getCurrentUserDoc(id, user);
+    const file = documentData.file;
     if (file) {
       const response = await this.fileUploadService.uploadDocumentFile(
         file,

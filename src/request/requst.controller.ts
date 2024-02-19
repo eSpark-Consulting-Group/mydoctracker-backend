@@ -5,6 +5,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Put,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -24,6 +25,7 @@ import { EditDocumentDTO } from 'src/document/dto/document-dto';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileValidator } from 'src/utils/helpers/file.validation';
+import { RequestUpdateDTO } from './dto/request-dto';
 
 @Controller('request')
 @UseGuards(JwtGuard)
@@ -31,18 +33,37 @@ import { fileValidator } from 'src/utils/helpers/file.validation';
 export class RequestController {
   constructor(private requestService: RequestService) {}
   @ApiOperation({
-    summary: 'Get all requests for update document',
+    summary: 'Get pending requests for update document',
   })
   @ApiBearerAuth()
   @HttpCode(200)
   @Roles([UserRoles.ACU, UserRoles.CU])
   @Get('doc')
-  async getAllReqsForUpdateDoc(@CurrentUser() user: Users) {
-    const data = await this.requestService.getAllReqsForUpdateDoc(user);
+  async getPendingReqs(@CurrentUser() user: Users) {
+    const data = await this.requestService.getPendingReqs(user);
     return {
       data,
       status: 'success',
       message: 'All requests have been fetched successfully!',
+    };
+  }
+
+  @ApiOperation({
+    summary: 'Approve/Reject Document Update Request using request ID',
+  })
+  @ApiBearerAuth()
+  @HttpCode(200)
+  @Roles([UserRoles.ACU, UserRoles.CU])
+  @Put('doc/:id')
+  async respondToDocRequest(
+    @CurrentUser() user: Users,
+    @Body() reqData: RequestUpdateDTO,
+    @Param() id: ParamDTO,
+  ) {
+    await this.requestService.respondToDocRequest(user, reqData, id.id);
+    return {
+      status: 'success',
+      message: `Request has been ${reqData.status}!`,
     };
   }
 

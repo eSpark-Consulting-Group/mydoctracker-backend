@@ -145,8 +145,7 @@ export class DcoumentController {
   ) {
     const data = await this.documentService.editDocument(
       user,
-      reqData,
-      file,
+      { ...reqData, file },
       id.id,
     );
     return {
