@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Param,
   Post,
@@ -30,12 +31,28 @@ import { fileValidator } from 'src/utils/helpers/file.validation';
 export class RequestController {
   constructor(private requestService: RequestService) {}
   @ApiOperation({
+    summary: 'Get all requests for update document',
+  })
+  @ApiBearerAuth()
+  @HttpCode(200)
+  @Roles([UserRoles.ACU, UserRoles.CU])
+  @Get('doc')
+  async getAllReqsForUpdateDoc(@CurrentUser() user: Users) {
+    const data = await this.requestService.getAllReqsForUpdateDoc(user);
+    return {
+      data,
+      status: 'success',
+      message: 'All requests have been fetched successfully!',
+    };
+  }
+
+  @ApiOperation({
     summary: 'Create a document update request using document ID',
   })
   @ApiBearerAuth()
   @HttpCode(200)
   @Roles([UserRoles.RCU, UserRoles.BCU])
-  @Post('doc/create/:id')
+  @Post('doc/:id')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   async createRequestForDocument(

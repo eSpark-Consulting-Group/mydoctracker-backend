@@ -1,11 +1,9 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { S3_ENUMS } from 'enum';
-import { DocumentService } from 'src/document/document.service';
-import { EditDocumentDTO } from 'src/document/dto/document-dto';
 import { Document } from 'src/entities/Document.entity';
 import { Request, RequestType } from 'src/entities/Request.entity';
-import { Users } from 'src/entities/User.entity';
+import { UserRoles, Users } from 'src/entities/User.entity';
 import { SubsidiaryService } from 'src/subsidiary/subsidiary.service';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { Repository } from 'typeorm';
@@ -61,5 +59,21 @@ export class RequestService {
     });
     if (file) req.meta = { ...req.meta, file };
     return this.requestRepositry.save(req);
+  }
+  async getAllReqsForUpdateDoc(user: Users) {
+    if (user.role === UserRoles.CU) {
+      return this.requestRepositry
+        .createQueryBuilder('request')
+        .innerJoinAndSelect('request.subsidiary', 'subsidiary')
+        .leftJoinAndSelect('subsidiary.admin', 'admin')
+        .where('subsidiary.admin IS NULL')
+        .andWhere('subsidiary.createdBy = :createdBy', { createdBy: user.id })
+        .getMany();
+    }
+    return this.requestRepositry
+      .createQueryBuilder('request')
+      .innerJoin('request.subsidiary', 'subsidiary')
+      .where('subsidiary.admin = :admin', { admin: user.id })
+      .getMany();
   }
 }
