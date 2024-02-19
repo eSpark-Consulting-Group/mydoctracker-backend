@@ -54,6 +54,9 @@ export class DocumentService {
     try {
       const file = documentData.file;
       const employeeId = documentData.employeeId;
+      if (employeeId && user.role === UserRoles.SU) {
+        throw new ForbiddenException('You cannot add an employee');
+      }
       const otpID = await this.otpService.verifyOTP(
         user,
         OtpPurpose.add_document,
