@@ -43,6 +43,7 @@ export class DcoumentController {
   })
   @Get('/')
   @HttpCode(200)
+  @Roles([UserRoles.SU, UserRoles.ACU, UserRoles.BCU, UserRoles.RCU])
   async getAllDocuments(@CurrentUser() user: Users) {
     const data = await this.documentService.geAllDocuments(user);
     return {
@@ -82,7 +83,7 @@ export class DcoumentController {
       data,
     };
   }
-  @Roles([UserRoles.SU])
+  @Roles([UserRoles.SU, UserRoles.CU])
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get OTP for adding a  Document',
@@ -122,7 +123,7 @@ export class DcoumentController {
   }
 
   @ApiBearerAuth()
-  @Roles([UserRoles.SU])
+  @Roles([UserRoles.SU, UserRoles.ACU])
   @ApiOperation({
     summary: 'Edit a Document',
   })
@@ -144,8 +145,7 @@ export class DcoumentController {
   ) {
     const data = await this.documentService.editDocument(
       user,
-      reqData,
-      file,
+      { ...reqData, file },
       id.id,
     );
     return {

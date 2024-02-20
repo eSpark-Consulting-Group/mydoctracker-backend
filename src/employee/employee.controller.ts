@@ -12,7 +12,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { Roles } from 'src/auth/guard/roles-decorator';
 import { UserRoles, Users } from 'src/entities/User.entity';
@@ -32,6 +37,9 @@ import { fileValidator } from 'src/utils/helpers/file.validation';
 export class EmployeeController {
   constructor(private employeeService: EmployeeService) {}
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Add an employee (CU only)',
+  })
   @Roles([UserRoles.CU])
   @Post('')
   @HttpCode(200)
@@ -48,6 +56,9 @@ export class EmployeeController {
   }
 
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Edit employee Details (CU only)',
+  })
   @Roles([UserRoles.CU])
   @Put(':id')
   @HttpCode(200)
@@ -81,6 +92,9 @@ export class EmployeeController {
   }
 
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete an employee (CU only)',
+  })
   @Roles([UserRoles.CU])
   @Delete(':id')
   @HttpCode(200)
@@ -95,6 +109,9 @@ export class EmployeeController {
     };
   }
   @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get all employees in a subidiary (CU and ACU only)',
+  })
   @Roles([UserRoles.CU, UserRoles.ACU])
   @Get(':subsidiary')
   @HttpCode(200)

@@ -48,7 +48,4 @@ export class Request {
 
   @Column()
   documentId: string;
-
-  @Column({ type: 'enum', enum: RequestStatus, default: RequestStatus.PENDING })
-  status: RequestStatus;
 }
