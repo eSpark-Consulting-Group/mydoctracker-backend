@@ -13,18 +13,13 @@ import {
   MinLength,
 } from 'class-validator';
 import { CONTACT_REGEX, PASSWORD_REGEX, USERNAME_REGEX } from 'enum';
-import { UserRoles } from 'src/entities/User.entity';
 
 const invalidContactMsg =
   'Invalid contact number format. It should be like (123) 456-7890 | (123)456-7890 | 123-456-7890 | 1234567890';
 const invalidUsernameMsg =
   'Username should only contain alphanumeric characters (letters and numbers), Small Letters, Underscores (_) and hyphens (-).';
-  
-enum SignupRoles {
-  SU = UserRoles.SU,
-  CU = UserRoles.CU,
-}
-export class SignupDTO {
+
+export class SUSignupDTO {
   @ApiProperty({
     type: String,
     example: 'First Name',
@@ -40,6 +35,14 @@ export class SignupDTO {
   @IsString()
   @IsNotEmpty()
   readonly lastName: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'Address',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly address: string;
 
   @ApiProperty({
     type: String,
@@ -87,12 +90,72 @@ export class SignupDTO {
 
   @ApiProperty({
     type: String,
-    example: SignupRoles.SU,
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  readonly rememberMe?: boolean;
+}
+export class CUSignupDTO {
+  @ApiProperty({
+    type: String,
+    example: 'Company Name',
   })
   @IsString()
   @IsNotEmpty()
-  @IsEnum(SignupRoles)
-  readonly role: UserRoles;
+  readonly companyName: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'Company Address',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly address: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'fname_lname',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3, { message: 'Ussername must be at least 3 characters long' })
+  @MaxLength(20, { message: 'Ussername must not exceed 20 characters' })
+  @Matches(USERNAME_REGEX, { message: invalidUsernameMsg })
+  readonly username: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'email@email.com',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  readonly email: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'Admin@test123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  @MaxLength(20, { message: 'Password must not exceed 20 characters' })
+  @Matches(PASSWORD_REGEX, {
+    message:
+      'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
+  })
+  readonly password: string;
+
+  @ApiProperty({
+    type: String,
+    example: '1234567890',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsDefined()
+  @Matches(CONTACT_REGEX, { message: invalidContactMsg })
+  readonly contact: string;
 
   @ApiProperty({
     type: String,

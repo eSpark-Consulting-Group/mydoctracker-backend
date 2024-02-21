@@ -8,21 +8,15 @@ import { UsersService } from 'src/users/users.service';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { EmailService } from 'src/utils/helpers/email';
 import { Subsidiary } from 'src/entities/Subsidiary.entity';
-import { CompanyService } from 'src/company/company.service';
-import { Company } from 'src/entities/Company.entity';
 
 @Module({
-  imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([Users, Subsidiary, Company]),
-  ],
+  imports: [ConfigModule, TypeOrmModule.forFeature([Users, Subsidiary])],
   controllers: [SubsidiaryController],
   providers: [
     SubsidiaryService,
     UsersService,
     CloudStorageService,
     EmailService,
-    CompanyService,
   ],
   exports: [SubsidiaryService],
 })

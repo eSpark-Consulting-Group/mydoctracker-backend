@@ -7,10 +7,8 @@ import { UsersService } from 'src/users/users.service';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { SubsidiaryService } from 'src/subsidiary/subsidiary.service';
 import { Subsidiary } from 'src/entities/Subsidiary.entity';
-import { Company } from 'src/entities/Company.entity';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from 'src/utils/helpers/email';
-import { CompanyService } from 'src/company/company.service';
 import { AddEmployeeDTO, EditEmployeeDTO } from './dto/employee-dto';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
@@ -46,17 +44,12 @@ describe('EmployeeService', () => {
         SubsidiaryService,
         JwtService,
         EmailService,
-        CompanyService,
         {
           provide: getRepositoryToken(Users),
           useClass: Repository,
         },
         {
           provide: getRepositoryToken(Subsidiary),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(Company),
           useClass: Repository,
         },
       ],

@@ -3,14 +3,12 @@ import { Subsidiary } from 'src/entities/Subsidiary.entity';
 import { Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import { CreateSubsidiaryDTO } from './dto/subsidiary-dto';
-import { CompanyService } from 'src/company/company.service';
 import { NotFoundException } from '@nestjs/common';
 
 export class SubsidiaryService {
   constructor(
     @InjectRepository(Subsidiary)
     private subsidiaryRepositry: Repository<Subsidiary>,
-    private companyService: CompanyService,
   ) {}
   getSubsidiaryByOwner(user: Users, id: string) {
     return this.subsidiaryRepositry.findOne({ where: { id, createdBy: user } });
@@ -19,12 +17,7 @@ export class SubsidiaryService {
     return this.subsidiaryRepositry.findOne({ where: { id } });
   }
   async createSubsidiary(user: Users, data: CreateSubsidiaryDTO) {
-    const company = await this.companyService.getCurrentUserCompany(user);
-    if (!company) {
-      throw new NotFoundException('Please create a company first!');
-    }
     const newSubsidiary = this.subsidiaryRepositry.create({
-      company,
       createdBy: user,
       name: data.name,
     });
@@ -54,12 +47,8 @@ export class SubsidiaryService {
     }
   }
   async getAllSubsidiaries(user: Users) {
-    const company = await this.companyService.getCurrentUserCompany(user);
-    if (!company) {
-      throw new NotFoundException('Company not found!');
-    }
     return this.subsidiaryRepositry.find({
-      where: { company, createdBy: user },
+      where: { createdBy: user },
     });
   }
   save(subsidiary: Subsidiary) {

@@ -27,11 +27,17 @@ export class Users {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   firstName: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   lastName: string;
+
+  @Column()
+  address: string;
+
+  @Column({ nullable: true, default: null })
+  companyName: string;
 
   @Column({ nullable: true, default: null })
   profilePicture: string;

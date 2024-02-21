@@ -15,7 +15,6 @@ import { AdminModule } from './admin/admin.module';
 import { SubsidiaryModule } from './subsidiary/subsidiary.module';
 import { EmployeeModule } from './employee/employee.module';
 import { RequestModule } from './request/request.module';
-import { CompanyModule } from './company/company.module';
 
 @Module({
   imports: [
@@ -35,7 +34,6 @@ import { CompanyModule } from './company/company.module';
     SubsidiaryModule,
     EmployeeModule,
     RequestModule,
-    CompanyModule,
   ],
   controllers: [AppController],
   providers: [

@@ -10,8 +10,6 @@ import { RequestService } from './request.service';
 import { Request } from 'src/entities/Request.entity';
 import { SubsidiaryService } from 'src/subsidiary/subsidiary.service';
 import { Subsidiary } from 'src/entities/Subsidiary.entity';
-import { CompanyService } from 'src/company/company.service';
-import { Company } from 'src/entities/Company.entity';
 import { Document } from 'src/entities/Document.entity';
 import { DocumentService } from 'src/document/document.service';
 import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
@@ -39,13 +37,12 @@ import { Firmware } from 'src/entities/Firmware.entity';
       Users,
       Request,
       Subsidiary,
-      Company,
       Document,
       DocumentHistory,
       DeviceInventory,
       Admin,
       OTP,
-      Firmware
+      Firmware,
     ]),
   ],
   controllers: [RequestController],
@@ -55,7 +52,6 @@ import { Firmware } from 'src/entities/Firmware.entity';
     CloudStorageService,
     EmailService,
     SubsidiaryService,
-    CompanyService,
     DocumentService,
     DeviceService,
     OTPService,
