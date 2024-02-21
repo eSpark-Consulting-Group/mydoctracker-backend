@@ -3,6 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -21,7 +22,7 @@ export class Subsidiary {
   @JoinColumn({ name: 'createdBy' })
   createdBy: Users;
 
-  @ManyToOne(() => Users, { nullable: true, onDelete: 'SET NULL' })
+  @OneToOne(() => Users, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'admin' })
   admin: Users;
 }

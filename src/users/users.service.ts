@@ -20,6 +20,7 @@ import {
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { EmailService } from 'src/utils/helpers/email';
 import { S3_ENUMS } from 'enum';
+import { paginate, IPaginationOptions } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UsersService {
@@ -307,19 +308,34 @@ export class UsersService {
   }
   async getAllEmployeesBySubsidiary(
     subsidiaryId: string,
-    createdByOrAdmin: string,
+    user: Users,
+    options: IPaginationOptions,
   ) {
-    return this.userRepositry
+    const queryBuilder = this.userRepositry
       .createQueryBuilder('user')
       .innerJoin('user.subsidiary', 'subsidiary')
       .where('subsidiary.id = :subsidiaryId', { subsidiaryId })
-      .andWhere(
-        '(subsidiary.createdBy = :createdByOrAdmin OR subsidiary.admin = :createdByOrAdmin)',
-        {
-          createdByOrAdmin,
-        },
-      )
-      .getMany();
+      .andWhere('subsidiary.createdBy = :createdBy', {
+        createdBy: user.id,
+      });
+    return paginate(queryBuilder, options);
+  }
+  async getAllEmployees(user: Users, options: IPaginationOptions) {
+    if (user.role === UserRoles.CU) {
+      const queryBuilder = this.userRepositry
+        .createQueryBuilder('user')
+        .innerJoin('user.subsidiary', 'subsidiary')
+        .where('subsidiary.createdBy = :createdBy', {
+          createdBy: user.id,
+        });
+      return paginate(queryBuilder, options);
+    }
+    const queryBuilder = this.userRepositry
+      .createQueryBuilder('user')
+      .innerJoin('user.subsidiary', 'subsidiary')
+      .where('subsidiary.admin = :adminId', { adminId: user.id })
+      .andWhere('user.id <> :adminId', { adminId: user.id });
+    return paginate(queryBuilder, options);
   }
 
   async getEmployeeByCUandACU(employeeId: string, createdByOrAdmin: string) {
