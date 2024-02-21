@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
   Param,
+  ParseIntPipe,
   Post,
   Put,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -30,6 +33,7 @@ import { CurrentUser } from 'src/utils/decorators/current-user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
 import { fileValidator } from 'src/utils/helpers/file.validation';
+import { DefaultPaginationOptions } from 'enum';
 
 @ApiTags('Employee')
 @Controller('employee')
@@ -108,20 +112,56 @@ export class EmployeeController {
       status: 'success',
     };
   }
+
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Get all employees in a subidiary (CU and ACU only)',
+    summary: 'Get all employees (CU and ACU only)',
   })
   @Roles([UserRoles.CU, UserRoles.ACU])
+  @Get('')
+  @HttpCode(200)
+  async getAllEmployees(
+    @CurrentUser() user: Users,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number = DefaultPaginationOptions.page_number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number = DefaultPaginationOptions.limit,
+  ) {
+    limit = limit > 10 ? 10 : limit;
+    const data = await this.employeeService.getAllEmployees(user, {
+      page,
+      limit,
+    });
+    return {
+      data,
+      message: 'Employees have been fetched successfully!',
+      status: 'success',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get all employees in a subidiary (CU only)',
+  })
+  @Roles([UserRoles.CU])
   @Get(':subsidiary')
   @HttpCode(200)
   async getAllEmployeesBySubsidiary(
     @CurrentUser() user: Users,
     @Param() param: SubsdiaryIdDTO,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number = DefaultPaginationOptions.page_number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number = DefaultPaginationOptions.limit,
   ) {
+    limit = limit > 10 ? 10 : limit;
     const data = await this.employeeService.getAllEmployeesBySubsidiary(
       user,
       param.subsidiary,
+      {
+        page,
+        limit,
+      },
     );
     return {
       data,

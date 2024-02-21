@@ -17,3 +17,7 @@ export enum DocumentType {
   SINGLE = 'SINGLE',
   MULTIPLE = 'MULTIPLE',
 }
+export enum DefaultPaginationOptions {
+  page_number = 1,
+  limit = 10,
+}

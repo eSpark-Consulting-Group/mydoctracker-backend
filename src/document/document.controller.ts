@@ -30,6 +30,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/guard/roles-decorator';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
 import { fileValidator } from 'src/utils/helpers/file.validation';
+import { DefaultPaginationOptions } from 'enum';
 
 @ApiTags('Document')
 @Controller('document')
@@ -107,8 +108,10 @@ export class DcoumentController {
   async getDocumentHistory(
     @CurrentUser() user: Users,
     @Param() id: ParamDTO,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number = DefaultPaginationOptions.page_number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number = DefaultPaginationOptions.limit,
   ) {
     limit = limit > 10 ? 10 : limit;
     const data = await this.documentService.getDocumentHistory(user, id.id, {

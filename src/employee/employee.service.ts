@@ -9,6 +9,7 @@ import { AddEmployeeDTO, EditEmployeeDTO } from './dto/employee-dto';
 import { UsersService } from 'src/users/users.service';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { S3_ENUMS } from 'enum';
+import { IPaginationOptions } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class EmployeeService {
@@ -128,7 +129,18 @@ export class EmployeeService {
       throw new NotFoundException('Employee not found!');
     }
   }
-  async getAllEmployeesBySubsidiary(user: Users, subsidiaryId: string) {
-    return this.userService.getAllEmployeesBySubsidiary(subsidiaryId, user.id);
+  async getAllEmployeesBySubsidiary(
+    user: Users,
+    subsidiaryId: string,
+    options: IPaginationOptions,
+  ) {
+    return this.userService.getAllEmployeesBySubsidiary(
+      subsidiaryId,
+      user,
+      options,
+    );
+  }
+  async getAllEmployees(user: Users, options: IPaginationOptions) {
+    return this.userService.getAllEmployees(user, options);
   }
 }
