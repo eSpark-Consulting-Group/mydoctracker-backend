@@ -11,7 +11,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 import { UserRoles, UserStatus, Users } from 'src/entities/User.entity';
-import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
+import { SigninDTO, SUSignupDTO, UpdateProfileDTO } from './dto/users-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { EmailService } from 'src/utils/helpers/email';
 import { S3_ENUMS } from 'enum';
@@ -86,7 +86,7 @@ describe('UserService', () => {
   });
 
   it('should sign up a single user successfully', async () => {
-    const newUser: SignupDTO = {
+    const newUser: SUSignupDTO = {
       firstName: 'John',
       lastName: 'Doe',
       username: 'johndoe',
@@ -105,7 +105,7 @@ describe('UserService', () => {
       id: '123',
     });
     mockJwtService.signAsync.mockResolvedValue('mockedToken');
-    const result = await userService.signup(newUser);
+    const result = await userService.signupSU(newUser);
     expect(result).toHaveProperty('user');
     expect(result).toHaveProperty('token');
     expect(mockUserRepository.create).toHaveBeenCalledWith({
@@ -131,7 +131,7 @@ describe('UserService', () => {
     );
   });
   it('should throw ConflictException for duplicate username', async () => {
-    const newUser: SignupDTO = {
+    const newUser: SUSignupDTO = {
       contact: '123',
       email: 'abc@abc.com',
       firstName: 'abc',
@@ -152,7 +152,7 @@ describe('UserService', () => {
     });
 
     // Call the signupSingleUser method and expect it to throw a ConflictException
-    await expect(userService.signup(newUser)).rejects.toThrowError(
+    await expect(userService.signupSU(newUser)).rejects.toThrowError(
       ConflictException,
     );
   });

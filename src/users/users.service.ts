@@ -8,10 +8,15 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserStatus, Users } from 'src/entities/User.entity';
+import { UserRoles, UserStatus, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { SigninDTO, SignupDTO, UpdateProfileDTO } from './dto/users-dto';
+import {
+  CUSignupDTO,
+  SigninDTO,
+  SUSignupDTO,
+  UpdateProfileDTO,
+} from './dto/users-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { EmailService } from 'src/utils/helpers/email';
 import { S3_ENUMS } from 'enum';
@@ -49,7 +54,7 @@ export class UsersService {
       relations: ['subsidiary'],
     });
   }
-  async signup(newUser: SignupDTO) {
+  async signupSU(newUser: SUSignupDTO) {
     try {
       const createdUser = this.userRepositry.create({
         firstName: newUser.firstName,
@@ -58,7 +63,38 @@ export class UsersService {
         username: newUser.username,
         email: newUser.email,
         hashedPassword: this.hashPassword(newUser.password),
-        role: newUser.role,
+        address: newUser.address,
+        role: UserRoles.SU,
+      });
+      const user = await this.userRepositry.save(createdUser);
+      const payload = { id: user.id, email: user.email };
+      let token;
+      if (newUser?.rememberMe) {
+        token = await this.jwtService.signAsync(payload);
+      } else {
+        token = await this.jwtService.signAsync(payload, {
+          expiresIn: process.env.JWT_EXPIRE,
+        });
+      }
+      return { user, token };
+    } catch (error) {
+      if (error.errno === 1062) {
+        this.duplicateErrorHandler(error);
+      } else {
+        throw error;
+      }
+    }
+  }
+  async signupCU(newUser: CUSignupDTO) {
+    try {
+      const createdUser = this.userRepositry.create({
+        address: newUser.address,
+        companyName: newUser.companyName,
+        contact: newUser.contact,
+        username: newUser.username,
+        email: newUser.email,
+        hashedPassword: this.hashPassword(newUser.password),
+        role: UserRoles.CU,
       });
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };

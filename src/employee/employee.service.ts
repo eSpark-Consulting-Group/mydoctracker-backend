@@ -28,6 +28,7 @@ export class EmployeeService {
         role,
         subsidiary,
         username,
+        address,
       } = data;
       const foundSubsidiary = await this.subsidiaryService.getSubsidiaryByOwner(
         user,
@@ -46,6 +47,7 @@ export class EmployeeService {
         hashedPassword: this.userService.hashPassword(password),
         username,
         role,
+        address,
       });
 
       const newEmployee = await this.userService.save(employee);

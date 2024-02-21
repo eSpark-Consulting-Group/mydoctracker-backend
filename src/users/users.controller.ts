@@ -23,9 +23,10 @@ import {
 } from '@nestjs/swagger';
 import {
   ChangePasswordDTO,
+  CUSignupDTO,
   ForgotPasswordDTO,
   SigninDTO,
-  SignupDTO,
+  SUSignupDTO,
   UpdateProfileDTO,
 } from './dto/users-dto';
 import { APIResponseType } from 'src/utils/APIResponse';
@@ -43,13 +44,24 @@ export class UsersController {
   constructor(private userService: UsersService) {}
   @ApiOperation({
     summary: 'Signup a single user',
-    description:
-      'Initiates the user registration process by accepting user-provided signup data. The "SignupDTO" includes necessary details like username, email, and password. Utilizes the "UserService.signupSingleUser" method to create a new user account based on the received data, ensuring data integrity and validation. Upon successful account creation, responds with a "status" indicating success, a confirmation "message", and "data" representing the newly created user details. Failed registration attempts prompt appropriate error handling or status codes. This endpoint is crucial for user registration and maintains data consistency.',
   })
-  @Post('/signup')
+  @Post('/signup/su')
   @HttpCode(200)
-  async signup(@Body() reqData: SignupDTO) {
-    const data = await this.userService.signup(reqData);
+  async signupSU(@Body() reqData: SUSignupDTO) {
+    const data = await this.userService.signupSU(reqData);
+    return {
+      status: 'success',
+      message: 'Your account has been created successfully!',
+      data,
+    };
+  }
+  @ApiOperation({
+    summary: 'Signup a Coporate user',
+  })
+  @Post('/signup/cu')
+  @HttpCode(200)
+  async signupCU(@Body() reqData: CUSignupDTO) {
+    const data = await this.userService.signupCU(reqData);
     return {
       status: 'success',
       message: 'Your account has been created successfully!',

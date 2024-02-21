@@ -6,8 +6,6 @@ import { SubsidiaryService } from './subsidiary.service';
 import { CreateSubsidiaryDTO } from './dto/subsidiary-dto';
 import { Subsidiary } from 'src/entities/Subsidiary.entity';
 import { Users } from 'src/entities/User.entity';
-import { Company } from 'src/entities/Company.entity';
-import { CompanyService } from 'src/company/company.service';
 
 describe('SubsidiaryService', () => {
   const mockCompanyService = {
@@ -24,13 +22,8 @@ describe('SubsidiaryService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SubsidiaryService,
-        { provide: CompanyService, useValue: mockCompanyService },
         {
           provide: SUBSIDIARY_TOKEN,
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(Company),
           useClass: Repository,
         },
       ],
