@@ -241,46 +241,52 @@ export class DocumentService {
     }
     return this.documentRepositry.find({ where: { assignee: employee } });
   }
-  async getAllEmployeesDocuments(user: Users, options: IPaginationOptions) {
-    if (user.role === UserRoles.CU) {
-      const queryBuilder = this.documentRepositry
-        .createQueryBuilder('document')
-        .innerJoinAndSelect('document.assignee', 'assignee')
-        .innerJoin('assignee.subsidiary', 'subsidiary')
-        .where('subsidiary.createdBy = :createdBy', {
-          createdBy: user.id,
-        })
-        .select([
-          'document',
-          'assignee.id',
-          'assignee.firstName',
-          'assignee.lastName',
-        ]);
-      return paginate(queryBuilder, options);
-    }
+  async getAllEmployeesDocuments(
+    user: Users,
+    options: IPaginationOptions,
+    searchField?: string,
+  ) {
     const queryBuilder = this.documentRepositry
       .createQueryBuilder('document')
-      .innerJoinAndSelect('document.assignee', 'assignee')
+      .where('document.active = :active', { active: true })
+      .innerJoin('document.assignee', 'assignee')
+      .innerJoin('document.tracker', 'tracker')
       .innerJoin('assignee.subsidiary', 'subsidiary')
-      .where('subsidiary.admin = :adminId', { adminId: user.id })
-      .andWhere('assignee.id <> :adminId', { adminId: user.id })
       .select([
         'document',
+        'tracker.id',
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
       ]);
+    if (searchField) {
+      queryBuilder.andWhere(
+        '(tracker.id LIKE :trackerId OR assignee.firstName LIKE :name OR assignee.lastName LIKE :name)',
+        { trackerId: `%${searchField}%`, name: `%${searchField}%` },
+      );
+    }
+    if (user.role === UserRoles.CU) {
+      queryBuilder.andWhere('subsidiary.createdBy = :createdBy', {
+        createdBy: user.id,
+      });
+      return paginate(queryBuilder, options);
+    }
+    queryBuilder
+      .andWhere('subsidiary.admin = :adminId', { adminId: user.id })
+      .andWhere('assignee.id <> :adminId', { adminId: user.id });
     return paginate(queryBuilder, options);
   }
   async getAllDocumentsInSubsidiary(
     user: Users,
     subsidiaryId: string,
     options: IPaginationOptions,
+    searchField?: string,
   ) {
     const queryBuilder = this.documentRepositry
       .createQueryBuilder('document')
       .where('document.active = :active', { active: true })
-      .innerJoinAndSelect('document.assignee', 'assignee')
+      .innerJoin('document.assignee', 'assignee')
+      .innerJoin('document.tracker', 'tracker')
       .innerJoin('assignee.subsidiary', 'subsidiary')
       .andWhere('subsidiary.id = :subsidiaryId', { subsidiaryId })
       .andWhere('subsidiary.createdBy = :createdBy', {
@@ -288,11 +294,17 @@ export class DocumentService {
       })
       .select([
         'document',
+        'tracker.id',
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
-        'assignee.role',
       ]);
+    if (searchField) {
+      queryBuilder.andWhere(
+        '(tracker.id LIKE :trackerId OR assignee.firstName LIKE :name OR assignee.lastName LIKE :name)',
+        { trackerId: `%${searchField}%`, name: `%${searchField}%` },
+      );
+    }
     return paginate(queryBuilder, options);
   }
 }

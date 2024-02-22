@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from './utils/ValidationPipe/validation.pipe';
+import { ValidationPipe } from '@nestjs/common';
 import { UnknownExceptionFilter } from './utils/filters/UnknownExceptionFilter.filter';
 import * as device from 'express-device';
 
@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalFilters(new UnknownExceptionFilter());
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(device.capture({ parseUserAgent: true }));
   const config = new DocumentBuilder()
     .setTitle('MyDocTracker APIs')

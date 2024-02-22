@@ -1,12 +1,10 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -21,16 +19,19 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
-import { ErrorResponseBody } from 'src/utils/APIResponse';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { UserRoles, Users } from 'src/entities/User.entity';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
-import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
+import {
+  AddDocumentDTO,
+  EditDocumentDTO,
+  PaginationDTO,
+  SearchWithPaginationDTO,
+} from './dto/document-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/guard/roles-decorator';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
 import { fileValidator } from 'src/utils/helpers/file.validation';
-import { DefaultPaginationOptions } from 'enum';
 
 @ApiTags('Document')
 @Controller('document')
@@ -108,16 +109,17 @@ export class DcoumentController {
   @HttpCode(200)
   async getAllEmployeesDocuments(
     @CurrentUser() user: Users,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
-    page: number = DefaultPaginationOptions.page_number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
-    limit: number = DefaultPaginationOptions.limit,
+    @Query() queryParams: SearchWithPaginationDTO,
   ) {
-    limit = limit > 10 ? 10 : limit;
-    const data = await this.documentService.getAllEmployeesDocuments(user, {
-      page,
-      limit,
-    });
+    const { page, limit, search } = queryParams;
+    const data = await this.documentService.getAllEmployeesDocuments(
+      user,
+      {
+        page,
+        limit,
+      },
+      search,
+    );
     return {
       data,
       status: 'success',
@@ -134,21 +136,18 @@ export class DcoumentController {
   async getAllDocumentsInSubsidiary(
     @CurrentUser() user: Users,
     @Param() id: ParamDTO,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
-    page: number = DefaultPaginationOptions.page_number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
-    limit: number = DefaultPaginationOptions.limit,
+    @Query() queryParams: SearchWithPaginationDTO,
   ) {
-    limit = limit > 10 ? 10 : limit;
-    const data =
-      await this.documentService.getAllDocumentsInSubsidiary(
-        user,
-        id.id,
-        {
-          page,
-          limit,
-        },
-      );
+    const { limit, page, search } = queryParams;
+    const data = await this.documentService.getAllDocumentsInSubsidiary(
+      user,
+      id.id,
+      {
+        page,
+        limit,
+      },
+      search,
+    );
     return {
       data,
       status: 'success',
@@ -165,12 +164,9 @@ export class DcoumentController {
   async getDocumentHistory(
     @CurrentUser() user: Users,
     @Param() id: ParamDTO,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
-    page: number = DefaultPaginationOptions.page_number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
-    limit: number = DefaultPaginationOptions.limit,
+    @Query() queryParams: PaginationDTO,
   ) {
-    limit = limit > 10 ? 10 : limit;
+    const { limit, page } = queryParams;
     const data = await this.documentService.getDocumentHistory(user, id.id, {
       page,
       limit,
