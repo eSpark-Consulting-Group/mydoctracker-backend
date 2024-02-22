@@ -1,12 +1,10 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -33,7 +31,7 @@ import { CurrentUser } from 'src/utils/decorators/current-user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ParamDTO } from 'src/subsidiary/dto/subsidiary-dto';
 import { fileValidator } from 'src/utils/helpers/file.validation';
-import { DefaultPaginationOptions } from 'enum';
+import { PaginationDTO } from 'src/document/dto/document-dto';
 
 @ApiTags('Employee')
 @Controller('employee')
@@ -122,12 +120,9 @@ export class EmployeeController {
   @HttpCode(200)
   async getAllEmployees(
     @CurrentUser() user: Users,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
-    page: number = DefaultPaginationOptions.page_number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
-    limit: number = DefaultPaginationOptions.limit,
+    @Query() queryParams: PaginationDTO,
   ) {
-    limit = limit > 10 ? 10 : limit;
+    const { limit, page } = queryParams;
     const data = await this.employeeService.getAllEmployees(user, {
       page,
       limit,
@@ -149,12 +144,9 @@ export class EmployeeController {
   async getAllEmployeesBySubsidiary(
     @CurrentUser() user: Users,
     @Param() param: SubsdiaryIdDTO,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
-    page: number = DefaultPaginationOptions.page_number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
-    limit: number = DefaultPaginationOptions.limit,
+    @Query() queryParams: PaginationDTO,
   ) {
-    limit = limit > 10 ? 10 : limit;
+    const { limit, page } = queryParams;
     const data = await this.employeeService.getAllEmployeesBySubsidiary(
       user,
       param.subsidiary,

@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiQuery } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   ArrayNotEmpty,
@@ -13,7 +13,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { DocumentType } from 'enum';
+import { DefaultPaginationOptions, DocumentType } from 'enum';
 
 class FieldDto {
   @ApiProperty({ example: 'fieldName' })
@@ -160,4 +160,30 @@ export class EditDocumentDTO {
   })
   @IsOptional()
   readonly file: Express.Multer.File;
+}
+export class PaginationDTO {
+  @ApiPropertyOptional()
+  @Transform(({ value }) => parseInt(value))
+  @Transform(({ value }) =>
+    value > DefaultPaginationOptions.limit
+      ? DefaultPaginationOptions.limit
+      : value,
+  )
+  @IsNumber()
+  @IsOptional()
+  readonly limit: number = DefaultPaginationOptions.limit;
+
+  @ApiPropertyOptional()
+  @Transform(({ value }) => parseInt(value))
+  @IsNumber()
+  @IsOptional()
+  readonly page: number = DefaultPaginationOptions.page_number;
+}
+
+export class SearchWithPaginationDTO extends PaginationDTO {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  readonly search?: string;
 }
