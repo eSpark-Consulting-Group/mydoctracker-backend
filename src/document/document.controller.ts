@@ -99,6 +99,63 @@ export class DcoumentController {
     };
   }
 
+  @Roles([UserRoles.CU, UserRoles.ACU])
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get All Documents of Employees',
+  })
+  @Get('/employee')
+  @HttpCode(200)
+  async getAllEmployeesDocuments(
+    @CurrentUser() user: Users,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number = DefaultPaginationOptions.page_number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number = DefaultPaginationOptions.limit,
+  ) {
+    limit = limit > 10 ? 10 : limit;
+    const data = await this.documentService.getAllEmployeesDocuments(user, {
+      page,
+      limit,
+    });
+    return {
+      data,
+      status: 'success',
+      message: 'Documents have been fetched successfully!',
+    };
+  }
+  @Roles([UserRoles.CU])
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get All Documents of Employees in a Subsidiary',
+  })
+  @Get('/employee/subsidiary/:id')
+  @HttpCode(200)
+  async getAllDocumentsInSubsidiary(
+    @CurrentUser() user: Users,
+    @Param() id: ParamDTO,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number = DefaultPaginationOptions.page_number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number = DefaultPaginationOptions.limit,
+  ) {
+    limit = limit > 10 ? 10 : limit;
+    const data =
+      await this.documentService.getAllDocumentsInSubsidiary(
+        user,
+        id.id,
+        {
+          page,
+          limit,
+        },
+      );
+    return {
+      data,
+      status: 'success',
+      message: 'Documents have been fetched successfully!',
+    };
+  }
+
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get Document history',
