@@ -50,7 +50,6 @@ export class DocumentService {
     await this.emailService.sendOtpEmail(assignee.email, otp.otp);
     return otp;
   }
-
   async addDocument(user: Users, documentData: AddDocumentDTO) {
     try {
       const file = documentData.file;
@@ -128,7 +127,6 @@ export class DocumentService {
       throw error;
     }
   }
-
   async editDocument(user: Users, documentData: EditDocumentDTO, id: string) {
     const document = await this.getCurrentUserDoc(id, user);
     const file = documentData.file;
@@ -162,13 +160,11 @@ export class DocumentService {
     await this.documentHistoryRepositry.save(documentHistory);
     return document;
   }
-
   async deleteDocument(assignee: Users, id: string) {
     const document = await this.getCurrentUserDoc(id, assignee);
     document.isDeleted = true;
     await this.documentRepositry.save(document);
   }
-
   async getDocumentHistory(
     assignee: Users,
     id: string,
@@ -181,7 +177,6 @@ export class DocumentService {
       .orderBy('history.createdAt', 'DESC');
     return paginate(queryBuilder, options);
   }
-
   async geAllDocuments(assignee: Users) {
     const documents = await this.documentRepositry
       .createQueryBuilder('document')
@@ -202,7 +197,6 @@ export class DocumentService {
     }
     return documents;
   }
-
   async getDocumentById(id: string, assignee: Users) {
     const document = await this.documentRepositry
       .createQueryBuilder('document')
@@ -237,7 +231,6 @@ export class DocumentService {
       },
     };
   }
-
   async getDocumentsByEmployee(employeeId: string, currentUser: Users) {
     const employee = await this.userService.getEmployeeByCUandACU(
       employeeId,
@@ -247,5 +240,59 @@ export class DocumentService {
       throw new NotFoundException('Employee not found!');
     }
     return this.documentRepositry.find({ where: { assignee: employee } });
+  }
+  async getAllEmployeesDocuments(user: Users, options: IPaginationOptions) {
+    if (user.role === UserRoles.CU) {
+      const queryBuilder = this.documentRepositry
+        .createQueryBuilder('document')
+        .innerJoinAndSelect('document.assignee', 'assignee')
+        .innerJoin('assignee.subsidiary', 'subsidiary')
+        .where('subsidiary.createdBy = :createdBy', {
+          createdBy: user.id,
+        })
+        .select([
+          'document',
+          'assignee.id',
+          'assignee.firstName',
+          'assignee.lastName',
+        ]);
+      return paginate(queryBuilder, options);
+    }
+    const queryBuilder = this.documentRepositry
+      .createQueryBuilder('document')
+      .innerJoinAndSelect('document.assignee', 'assignee')
+      .innerJoin('assignee.subsidiary', 'subsidiary')
+      .where('subsidiary.admin = :adminId', { adminId: user.id })
+      .andWhere('assignee.id <> :adminId', { adminId: user.id })
+      .select([
+        'document',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+      ]);
+    return paginate(queryBuilder, options);
+  }
+  async getAllDocumentsInSubsidiary(
+    user: Users,
+    subsidiaryId: string,
+    options: IPaginationOptions,
+  ) {
+    const queryBuilder = this.documentRepositry
+      .createQueryBuilder('document')
+      .where('document.active = :active', { active: true })
+      .innerJoinAndSelect('document.assignee', 'assignee')
+      .innerJoin('assignee.subsidiary', 'subsidiary')
+      .andWhere('subsidiary.id = :subsidiaryId', { subsidiaryId })
+      .andWhere('subsidiary.createdBy = :createdBy', {
+        createdBy: user.id,
+      })
+      .select([
+        'document',
+        'assignee.id',
+        'assignee.firstName',
+        'assignee.lastName',
+        'assignee.role',
+      ]);
+    return paginate(queryBuilder, options);
   }
 }
