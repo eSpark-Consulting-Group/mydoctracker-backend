@@ -30,6 +30,7 @@ export class EmployeeService {
         subsidiary,
         username,
         address,
+        accessibility,
       } = data;
       const foundSubsidiary = await this.subsidiaryService.getSubsidiaryByOwner(
         user,
@@ -50,7 +51,12 @@ export class EmployeeService {
         role,
         address,
       });
-
+      if (role === UserRoles.BCU) {
+        employee.accessibility = {
+          doc: accessibility.doc,
+          share: accessibility.share,
+        };
+      }
       const newEmployee = await this.userService.save(employee);
       if (role === UserRoles.ACU) {
         if (foundSubsidiary.admin) {

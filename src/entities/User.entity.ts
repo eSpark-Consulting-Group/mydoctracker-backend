@@ -71,6 +71,9 @@ export class Users {
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
+  @Column({ type: 'json', default: null, nullable: true })
+  accessibility: UserAccessibility;
+
   @Exclude()
   @Column({ type: 'json', default: null, nullable: true })
   meta: UserMeta;
@@ -89,4 +92,8 @@ export interface UserMeta {
     device: string;
     oldPasswordHash: string;
   }>;
+}
+export interface UserAccessibility {
+  doc: boolean;
+  share: boolean;
 }

@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDefined,
+  IsEnum,
+  IsNotEmpty,
+  IsNotEmptyObject,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { UserRoles } from 'src/entities/User.entity';
 import { SUSignupDTO, UpdateProfileDTO } from 'src/users/dto/users-dto';
 
@@ -7,6 +18,23 @@ enum EmployeeRoles {
   ACU = UserRoles.ACU,
   BCU = UserRoles.BCU,
   RCU = UserRoles.RCU,
+}
+class AccessibilityDTO {
+  @ApiProperty({
+    type: Boolean,
+    example: false,
+  })
+  @IsBoolean()
+  @IsNotEmpty()
+  readonly doc: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    example: false,
+  })
+  @IsBoolean()
+  @IsNotEmpty()
+  readonly share: boolean;
 }
 
 export class AddEmployeeDTO extends SUSignupDTO {
@@ -25,8 +53,17 @@ export class AddEmployeeDTO extends SUSignupDTO {
   @IsString()
   @IsNotEmpty()
   readonly subsidiary: string;
-}
 
+  @ApiProperty({
+    type: AccessibilityDTO,
+  })
+  @IsOptional()
+  @IsNotEmptyObject()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AccessibilityDTO)
+  readonly accessibility?: AccessibilityDTO;
+}
 export class EditEmployeeDTO extends UpdateProfileDTO {}
 export class SubsdiaryIdDTO {
   @ApiProperty({
