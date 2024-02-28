@@ -111,14 +111,14 @@ export class DcoumentController {
     @CurrentUser() user: Users,
     @Query() queryParams: SearchWithPaginationDTO,
   ) {
-    const { page, limit, search } = queryParams;
+    const { page, limit } = queryParams;
     const data = await this.documentService.getAllEmployeesDocuments(
       user,
       {
         page,
         limit,
       },
-      search,
+      queryParams,
     );
     return {
       data,
@@ -138,7 +138,7 @@ export class DcoumentController {
     @Param() id: ParamDTO,
     @Query() queryParams: SearchWithPaginationDTO,
   ) {
-    const { limit, page, search } = queryParams;
+    const { limit, page } = queryParams;
     const data = await this.documentService.getAllDocumentsInSubsidiary(
       user,
       id.id,
@@ -146,7 +146,7 @@ export class DcoumentController {
         page,
         limit,
       },
-      search,
+      queryParams,
     );
     return {
       data,
