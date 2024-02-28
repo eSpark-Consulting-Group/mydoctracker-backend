@@ -96,7 +96,7 @@ export class DocumentService {
       }
       if (documentData.fields) {
         newDocument.meta = {
-          fields: JSON.parse(documentData.fields),
+          fields: documentData.fields,
         };
       }
       const document = await this.documentRepositry.save(newDocument);
@@ -149,7 +149,7 @@ export class DocumentService {
     if (documentData.fields) {
       document.meta = {
         ...document.meta,
-        fields: JSON.parse(documentData.fields),
+        fields: documentData.fields,
       };
     }
     const documentHistory = this.documentHistoryRepositry.create({

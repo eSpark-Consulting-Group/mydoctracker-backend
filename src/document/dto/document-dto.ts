@@ -87,7 +87,10 @@ export class AddDocumentDTO {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  fields?: string;
+  fields?: {
+    name: string;
+    value: string;
+  }[];
 
   @ApiProperty({
     type: String,
@@ -150,7 +153,10 @@ export class EditDocumentDTO {
   @Transform(transformField)
   @IsOptional()
   @IsArray()
-  fields?: string;
+  fields?: {
+    name: string;
+    value: string;
+  }[];
 
   @ApiProperty({
     required: false,
