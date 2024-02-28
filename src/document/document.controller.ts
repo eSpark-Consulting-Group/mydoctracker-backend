@@ -179,7 +179,7 @@ export class DcoumentController {
   }
 
   @ApiBearerAuth()
-  @Roles([UserRoles.SU, UserRoles.ACU])
+  @Roles([UserRoles.SU, UserRoles.ACU, UserRoles.BCU])
   @ApiOperation({
     summary: 'Edit a Document',
   })
@@ -212,6 +212,7 @@ export class DcoumentController {
   }
 
   @ApiBearerAuth()
+  @Roles([UserRoles.SU])
   @ApiOperation({
     summary: 'Delete a Document',
   })

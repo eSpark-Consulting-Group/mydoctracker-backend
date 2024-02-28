@@ -53,15 +53,15 @@ export class Document {
   active: boolean;
 
   @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'assignee' })
+  @JoinColumn({ name: 'assigneeId' })
   assignee: Users;
+
+  @Column()
+  assigneeId: string;
 
   @Column({ type: 'json', default: null })
   meta: Meta;
-
-  @Column({ default: false })
-  isDeleted: boolean;
-
+  
   @OneToMany(() => DocumentHistory, (history) => history.document)
   history: DocumentHistory[];
 }
