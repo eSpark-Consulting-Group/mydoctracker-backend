@@ -52,19 +52,18 @@ export class DocumentService {
   }
   async addDocument(user: Users, documentData: AddDocumentDTO) {
     try {
-      const file = '';
-      // const file = documentData.file;
+      const file = documentData.file;
       const employeeId = documentData.employeeId;
       if (employeeId && user.role === UserRoles.SU) {
         throw new UnauthorizedException(
           'You cannot add document for an employee',
         );
       }
-      // const otpID = await this.otpService.verifyOTP(
-      //   user,
-      //   OtpPurpose.add_document,
-      //   documentData.otp,
-      // );
+      const otpID = await this.otpService.verifyOTP(
+        user,
+        OtpPurpose.add_document,
+        documentData.otp,
+      );
       const device = await this.deviceService.getDeviceById(
         documentData.deviceId,
       );
@@ -121,7 +120,7 @@ export class DocumentService {
         document: document,
       });
       await this.documentHistoryRepositry.save(documentHistory);
-      // await this.otpService.deleteOtp(otpID);
+      await this.otpService.deleteOtp(otpID);
       return document;
     } catch (error) {
       if (error.errno === 1062) {
@@ -242,7 +241,9 @@ export class DocumentService {
     if (!employee) {
       throw new NotFoundException('Employee not found!');
     }
-    return this.documentRepositry.find({ where: { assigneeId: employee.id } });
+    return this.documentRepositry.find({
+      where: { assigneeId: employee.id, active: true },
+    });
   }
   async getAllEmployeesDocuments(
     user: Users,
