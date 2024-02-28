@@ -53,8 +53,8 @@ export class EmployeeService {
       });
       if (role === UserRoles.BCU) {
         employee.accessibility = {
-          doc: accessibility.doc,
-          share: accessibility.share,
+          doc: accessibility.doc ?? false,
+          share: accessibility.share ?? false,
         };
       }
       const newEmployee = await this.userService.save(employee);

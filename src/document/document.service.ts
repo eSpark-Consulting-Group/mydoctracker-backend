@@ -36,7 +36,7 @@ export class DocumentService {
   ) {}
   async getCurrentUserDoc(id: string, assignee: Users) {
     const document = await this.documentRepositry.findOne({
-      where: { id, assignee, isDeleted: false },
+      where: { id, active: true },
     });
     if (!document) {
       throw new NotFoundException('Document not found');
@@ -52,18 +52,19 @@ export class DocumentService {
   }
   async addDocument(user: Users, documentData: AddDocumentDTO) {
     try {
-      const file = documentData.file;
+      const file = '';
+      // const file = documentData.file;
       const employeeId = documentData.employeeId;
       if (employeeId && user.role === UserRoles.SU) {
         throw new UnauthorizedException(
           'You cannot add document for an employee',
         );
       }
-      const otpID = await this.otpService.verifyOTP(
-        user,
-        OtpPurpose.add_document,
-        documentData.otp,
-      );
+      // const otpID = await this.otpService.verifyOTP(
+      //   user,
+      //   OtpPurpose.add_document,
+      //   documentData.otp,
+      // );
       const device = await this.deviceService.getDeviceById(
         documentData.deviceId,
       );
@@ -72,6 +73,7 @@ export class DocumentService {
         throw new BadRequestException('Device is offline');
       }
       const newDocument = this.documentRepositry.create({
+        assigneeId: user.id,
         assignee: user,
         creationDate: documentData.creationDate,
         file: '',
@@ -86,6 +88,7 @@ export class DocumentService {
         if (!employee) {
           throw new NotFoundException('Employee not found!');
         }
+        newDocument.assigneeId = employee.id;
         newDocument.assignee = employee;
       } else if (user.role !== UserRoles.SU) {
         throw new ForbiddenException(
@@ -118,7 +121,7 @@ export class DocumentService {
         document: document,
       });
       await this.documentHistoryRepositry.save(documentHistory);
-      await this.otpService.deleteOtp(otpID);
+      // await this.otpService.deleteOtp(otpID);
       return document;
     } catch (error) {
       if (error.errno === 1062) {
@@ -128,6 +131,9 @@ export class DocumentService {
     }
   }
   async editDocument(user: Users, documentData: EditDocumentDTO, id: string) {
+    if (user.role === UserRoles.BCU && !user.accessibility?.doc) {
+      throw new UnauthorizedException('You cannot edit document');
+    }
     const document = await this.getCurrentUserDoc(id, user);
     const file = documentData.file;
     if (file) {
@@ -162,8 +168,7 @@ export class DocumentService {
   }
   async deleteDocument(assignee: Users, id: string) {
     const document = await this.getCurrentUserDoc(id, assignee);
-    document.isDeleted = true;
-    await this.documentRepositry.save(document);
+    await this.documentRepositry.delete(document.id);
   }
   async getDocumentHistory(
     assignee: Users,
@@ -182,7 +187,6 @@ export class DocumentService {
       .createQueryBuilder('document')
       .innerJoin('document.tracker', 't')
       .where('document.assignee = :assignee', { assignee: assignee.id })
-      .andWhere('document.isDeleted = :isDeleted', { isDeleted: false })
       .select(['document', 't.batteryPercentage', 't.id'])
       .getMany();
     for (let i = 0; i < documents.length; i++) {
@@ -204,7 +208,6 @@ export class DocumentService {
       .innerJoinAndSelect('document.assignee', 'as')
       .where('document.id = :id', { id })
       .andWhere('document.assignee = :assignee', { assignee: assignee.id })
-      .andWhere('document.isDeleted = :isDeleted', { isDeleted: false })
       .select([
         'document',
         't.batteryPercentage',
@@ -239,7 +242,7 @@ export class DocumentService {
     if (!employee) {
       throw new NotFoundException('Employee not found!');
     }
-    return this.documentRepositry.find({ where: { assignee: employee } });
+    return this.documentRepositry.find({ where: { assigneeId: employee.id } });
   }
   async getAllEmployeesDocuments(
     user: Users,
