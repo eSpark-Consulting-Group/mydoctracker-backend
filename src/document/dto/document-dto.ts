@@ -22,7 +22,6 @@ class FieldDto {
   @ApiProperty({ example: 'fieldValue' })
   value: string;
 }
-
 const transformField = ({ value }) => {
   try {
     const parsedValue = JSON.parse(value);
@@ -179,7 +178,6 @@ export class PaginationDTO {
   @IsOptional()
   readonly page: number = DefaultPaginationOptions.page_number;
 }
-
 export class SearchWithPaginationDTO extends PaginationDTO {
   @ApiPropertyOptional()
   @IsString()
