@@ -190,4 +190,11 @@ export class SearchWithPaginationDTO extends PaginationDTO {
   @IsOptional()
   @IsNotEmpty()
   readonly search?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @IsEnum(DocumentType)
+  readonly type?: DocumentType;
 }

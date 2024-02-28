@@ -11,7 +11,11 @@ import { DeviceService } from 'src/device/device.service';
 import { Document } from 'src/entities/Document.entity';
 import { UserRoles, Users } from 'src/entities/User.entity';
 import { Repository } from 'typeorm';
-import { AddDocumentDTO, EditDocumentDTO } from './dto/document-dto';
+import {
+  AddDocumentDTO,
+  EditDocumentDTO,
+  SearchWithPaginationDTO,
+} from './dto/document-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { S3_ENUMS } from 'enum';
 import { DocumentHistory } from 'src/entities/DocumentHistory.entity';
@@ -188,16 +192,21 @@ export class DocumentService {
       .where('document.assignee = :assignee', { assignee: assignee.id })
       .select(['document', 't.batteryPercentage', 't.id'])
       .getMany();
+    const promises = [];
     for (let i = 0; i < documents.length; i++) {
-      const device = await this.deviceService.isDeviceActive(
-        documents[i].tracker.id,
+      promises.push(
+        this.deviceService
+          .isDeviceActive(documents[i].tracker.id)
+          .then((device) => {
+            const status = device.status ? 'active' : 'inactive';
+            documents[i].active = device.status;
+            Object.assign(documents[i], {
+              status,
+            });
+          }),
       );
-      const status = device.status ? 'active' : 'inactive';
-      documents[i].active = device.status;
-      Object.assign(documents[i], {
-        status,
-      });
     }
+    await Promise.all(promises);
     return documents;
   }
   async getDocumentById(id: string, assignee: Users) {
@@ -248,11 +257,11 @@ export class DocumentService {
   async getAllEmployeesDocuments(
     user: Users,
     options: IPaginationOptions,
-    searchField?: string,
+    filters: SearchWithPaginationDTO,
   ) {
+    const { search, type } = filters;
     const queryBuilder = this.documentRepositry
       .createQueryBuilder('document')
-      .where('document.active = :active', { active: true })
       .innerJoin('document.assignee', 'assignee')
       .innerJoin('document.tracker', 'tracker')
       .innerJoin('assignee.subsidiary', 'subsidiary')
@@ -262,12 +271,16 @@ export class DocumentService {
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
+        'assignee.profilePicture',
       ]);
-    if (searchField) {
+    if (search) {
       queryBuilder.andWhere(
         '(tracker.id LIKE :trackerId OR assignee.firstName LIKE :name OR assignee.lastName LIKE :name)',
-        { trackerId: `%${searchField}%`, name: `%${searchField}%` },
+        { trackerId: `%${search}%`, name: `%${search}%` },
       );
+    }
+    if (type) {
+      queryBuilder.andWhere('document.type = :type', { type });
     }
     if (user.role === UserRoles.CU) {
       queryBuilder.andWhere('subsidiary.createdBy = :createdBy', {
@@ -284,15 +297,15 @@ export class DocumentService {
     user: Users,
     subsidiaryId: string,
     options: IPaginationOptions,
-    searchField?: string,
+    filters: SearchWithPaginationDTO,
   ) {
+    const { search, type } = filters;
     const queryBuilder = this.documentRepositry
       .createQueryBuilder('document')
-      .where('document.active = :active', { active: true })
       .innerJoin('document.assignee', 'assignee')
       .innerJoin('document.tracker', 'tracker')
       .innerJoin('assignee.subsidiary', 'subsidiary')
-      .andWhere('subsidiary.id = :subsidiaryId', { subsidiaryId })
+      .where('subsidiary.id = :subsidiaryId', { subsidiaryId })
       .andWhere('subsidiary.createdBy = :createdBy', {
         createdBy: user.id,
       })
@@ -302,12 +315,16 @@ export class DocumentService {
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
+        'assignee.profilePicture',
       ]);
-    if (searchField) {
+    if (search) {
       queryBuilder.andWhere(
         '(tracker.id LIKE :trackerId OR assignee.firstName LIKE :name OR assignee.lastName LIKE :name)',
-        { trackerId: `%${searchField}%`, name: `%${searchField}%` },
+        { trackerId: `%${search}%`, name: `%${search}%` },
       );
+    }
+    if (type) {
+      queryBuilder.andWhere('document.type = :type', { type });
     }
     return paginate(queryBuilder, options);
   }
