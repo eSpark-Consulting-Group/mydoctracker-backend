@@ -40,7 +40,7 @@ export class DocumentService {
   ) {}
   async getCurrentUserDoc(id: string, assignee: Users) {
     const document = await this.documentRepositry.findOne({
-      where: { id, active: true },
+      where: { id, active: true, assigneeId: assignee.id },
     });
     if (!document) {
       throw new NotFoundException('Document not found');
@@ -178,11 +178,27 @@ export class DocumentService {
     id: string,
     options: IPaginationOptions,
   ) {
-    await this.getCurrentUserDoc(id, assignee);
     const queryBuilder = this.documentHistoryRepositry
       .createQueryBuilder('history')
       .where('history.documentId = :id', { id })
       .orderBy('history.createdAt', 'DESC');
+    if (assignee.role === UserRoles.CU) {
+      const document = await this.documentRepositry
+        .createQueryBuilder('document')
+        .where('document.id = :id', { id })
+        .innerJoin('document.assignee', 'assignee')
+        .innerJoin('assignee.subsidiary', 'subsidiary')
+        .innerJoin('subsidiary.createdBy', 'createdBy')
+        .andWhere('createdBy.id = :createdBy', {
+          createdBy: assignee.id,
+        })
+        .getOne();
+      if (!document) {
+        throw new NotFoundException('Document not found');
+      }
+      return paginate(queryBuilder, options);
+    }
+    await this.getCurrentUserDoc(id, assignee);
     return paginate(queryBuilder, options);
   }
   async geAllDocuments(assignee: Users) {
@@ -195,11 +211,24 @@ export class DocumentService {
     return documents;
   }
   async getDocumentById(id: string, assignee: Users) {
-    const document = await this.documentRepositry
+    const queryBuilder = this.documentRepositry
       .createQueryBuilder('document')
-      .innerJoin('document.tracker', 't')
-      .innerJoinAndSelect('document.assignee', 'as')
       .where('document.id = :id', { id })
+      .innerJoin('document.tracker', 't')
+      .innerJoinAndSelect('document.assignee', 'as');
+    if (assignee.role === UserRoles.CU) {
+      const document = await queryBuilder
+        .innerJoin('as.subsidiary', 'subsidiary')
+        .andWhere('subsidiary.createdBy = :createdBy', {
+          createdBy: assignee.id,
+        })
+        .getOne();
+      if (!document) {
+        throw new NotFoundException('Document not found!');
+      }
+      return document;
+    }
+    const document = await queryBuilder
       .andWhere('document.assignee = :assignee', { assignee: assignee.id })
       .select([
         'document',

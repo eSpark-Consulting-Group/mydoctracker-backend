@@ -1,7 +1,15 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { S3_ENUMS } from 'enum';
-import { Request, RequestStatus, RequestType } from 'src/entities/Request.entity';
+import {
+  Request,
+  RequestStatus,
+  RequestType,
+} from 'src/entities/Request.entity';
 import { UserRoles, Users } from 'src/entities/User.entity';
 import { SubsidiaryService } from 'src/subsidiary/subsidiary.service';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
@@ -18,6 +26,9 @@ export class RequestService {
     private documentService: DocumentService,
   ) {}
   async createRequestForDocument(user: Users, data: any, docID: string) {
+    if (user.role === UserRoles.BCU && user.accessibility?.doc) {
+      throw new ForbiddenException('You cannot create a request');
+    }
     const document = await this.documentService.getCurrentUserDoc(docID, user);
     const foundRequest = await this.requestRepositry.findOneBy({
       documentId: document.id,
@@ -83,15 +94,15 @@ export class RequestService {
         .andWhere('subsidiary.createdBy = :createdBy', { createdBy: user.id })
         .innerJoinAndSelect('request.createdBy', 'createdBy')
         .getOne();
+    } else {
+      request = await this.requestRepositry
+        .createQueryBuilder('request')
+        .where('request.id = :requestId', { requestId })
+        .innerJoin('request.subsidiary', 'subsidiary')
+        .andWhere('subsidiary.admin = :admin', { admin: user.id })
+        .innerJoinAndSelect('request.createdBy', 'createdBy')
+        .getOne();
     }
-    request = await this.requestRepositry
-      .createQueryBuilder('request')
-      .where('request.id = :requestId', { requestId })
-      .innerJoin('request.subsidiary', 'subsidiary')
-      .andWhere('subsidiary.admin = :admin', { admin: user.id })
-      .innerJoinAndSelect('request.createdBy', 'createdBy')
-      .getOne();
-
     if (!request) {
       throw new NotFoundException('Request not found!');
     }

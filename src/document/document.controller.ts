@@ -155,7 +155,6 @@ export class DcoumentController {
     };
   }
 
-  @Roles([UserRoles.SU, UserRoles.ACU, UserRoles.BCU, UserRoles.RCU])
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get Document history',
@@ -245,7 +244,6 @@ export class DcoumentController {
       message: 'Documents have been fetched successfully!',
     };
   }
-  @Roles([UserRoles.SU, UserRoles.ACU, UserRoles.BCU, UserRoles.RCU])
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get Document By ID',
