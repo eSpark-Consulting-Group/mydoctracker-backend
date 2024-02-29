@@ -146,7 +146,11 @@ export class EmployeeService {
       options,
     );
   }
-  async getAllEmployees(user: Users, options: IPaginationOptions) {
-    return this.userService.getAllEmployees(user, options);
+  async getAllEmployees(
+    user: Users,
+    options: IPaginationOptions,
+    search: string,
+  ) {
+    return this.userService.getAllEmployees(user, options, search);
   }
 }

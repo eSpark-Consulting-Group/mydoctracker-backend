@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import {
   AddDocumentDTO,
   EditDocumentDTO,
-  SearchWithPaginationDTO,
+  DocumentFilters,
 } from './dto/document-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { S3_ENUMS } from 'enum';
@@ -257,7 +257,7 @@ export class DocumentService {
   async getAllEmployeesDocuments(
     user: Users,
     options: IPaginationOptions,
-    filters: SearchWithPaginationDTO,
+    filters: DocumentFilters,
   ) {
     const { search, type } = filters;
     const queryBuilder = this.documentRepositry
@@ -297,7 +297,7 @@ export class DocumentService {
     user: Users,
     subsidiaryId: string,
     options: IPaginationOptions,
-    filters: SearchWithPaginationDTO,
+    filters: DocumentFilters,
   ) {
     const { search, type } = filters;
     const queryBuilder = this.documentRepositry

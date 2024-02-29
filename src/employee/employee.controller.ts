@@ -25,6 +25,7 @@ import { UserRoles, Users } from 'src/entities/User.entity';
 import {
   AddEmployeeDTO,
   EditEmployeeDTO,
+  SearchFilter,
   SubsdiaryIdDTO,
 } from './dto/employee-dto';
 import { CurrentUser } from 'src/utils/decorators/current-user';
@@ -121,12 +122,17 @@ export class EmployeeController {
   async getAllEmployees(
     @CurrentUser() user: Users,
     @Query() queryParams: PaginationDTO,
+    @Query() search: SearchFilter,
   ) {
     const { limit, page } = queryParams;
-    const data = await this.employeeService.getAllEmployees(user, {
-      page,
-      limit,
-    });
+    const data = await this.employeeService.getAllEmployees(
+      user,
+      {
+        page,
+        limit,
+      },
+      search.search,
+    );
     return {
       data,
       message: 'Employees have been fetched successfully!',

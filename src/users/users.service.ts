@@ -320,7 +320,11 @@ export class UsersService {
       });
     return paginate(queryBuilder, options);
   }
-  async getAllEmployees(user: Users, options: IPaginationOptions) {
+  async getAllEmployees(
+    user: Users,
+    options: IPaginationOptions,
+    search: string,
+  ) {
     if (user.role === UserRoles.CU) {
       const queryBuilder = this.userRepositry
         .createQueryBuilder('user')
@@ -328,6 +332,12 @@ export class UsersService {
         .where('subsidiary.createdBy = :createdBy', {
           createdBy: user.id,
         });
+      if (search) {
+        queryBuilder.andWhere(
+          '(user.id LIKE :userId OR user.firstName LIKE :name OR user.lastName LIKE :name)',
+          { userId: `%${search}%`, name: `%${search}%` },
+        );
+      }
       return paginate(queryBuilder, options);
     }
     const queryBuilder = this.userRepositry
@@ -335,6 +345,12 @@ export class UsersService {
       .innerJoin('user.subsidiary', 'subsidiary')
       .where('subsidiary.admin = :adminId', { adminId: user.id })
       .andWhere('user.id <> :adminId', { adminId: user.id });
+    if (search) {
+      queryBuilder.andWhere(
+        '(user.id LIKE :userId OR user.firstName LIKE :name OR user.lastName LIKE :name)',
+        { userId: `%${search}%`, name: `%${search}%` },
+      );
+    }
     return paginate(queryBuilder, options);
   }
 
