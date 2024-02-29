@@ -333,10 +333,9 @@ export class UsersService {
           createdBy: user.id,
         });
       if (search) {
-        queryBuilder.andWhere(
-          '(user.id LIKE :userId OR user.firstName LIKE :name OR user.lastName LIKE :name)',
-          { userId: `%${search}%`, name: `%${search}%` },
-        );
+        queryBuilder.andWhere('user.username LIKE :name', {
+          name: `%${search}%`,
+        });
       }
       return paginate(queryBuilder, options);
     }
@@ -346,10 +345,9 @@ export class UsersService {
       .where('subsidiary.admin = :adminId', { adminId: user.id })
       .andWhere('user.id <> :adminId', { adminId: user.id });
     if (search) {
-      queryBuilder.andWhere(
-        '(user.id LIKE :userId OR user.firstName LIKE :name OR user.lastName LIKE :name)',
-        { userId: `%${search}%`, name: `%${search}%` },
-      );
+      queryBuilder.andWhere('user.username LIKE :name', {
+        name: `%${search}%`,
+      });
     }
     return paginate(queryBuilder, options);
   }
