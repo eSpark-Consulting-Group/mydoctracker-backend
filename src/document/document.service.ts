@@ -190,23 +190,8 @@ export class DocumentService {
       .createQueryBuilder('document')
       .innerJoin('document.tracker', 't')
       .where('document.assignee = :assignee', { assignee: assignee.id })
-      .select(['document', 't.batteryPercentage', 't.id'])
+      .select(['document', 't.lastActivity', 't.id'])
       .getMany();
-    const promises = [];
-    for (let i = 0; i < documents.length; i++) {
-      promises.push(
-        this.deviceService
-          .isDeviceActive(documents[i].tracker.id)
-          .then((device) => {
-            const status = device.status ? 'active' : 'inactive';
-            documents[i].active = device.status;
-            Object.assign(documents[i], {
-              status,
-            });
-          }),
-      );
-    }
-    await Promise.all(promises);
     return documents;
   }
   async getDocumentById(id: string, assignee: Users) {
@@ -218,7 +203,7 @@ export class DocumentService {
       .andWhere('document.assignee = :assignee', { assignee: assignee.id })
       .select([
         'document',
-        't.batteryPercentage',
+        't.lastActivity',
         't.id',
         'as.email',
         'as.firstName',
@@ -229,18 +214,7 @@ export class DocumentService {
     if (!document) {
       throw new NotFoundException('Document not found!');
     }
-    const device = await this.deviceService.isDeviceActive(document.tracker.id);
-    document.active = device.status;
-    return {
-      document,
-      lastActivity: {
-        lat: device.device.lat,
-        lng: device.device.lng,
-        state: device.device.state,
-        sentAt: device.device.sentAt,
-        status: document.active ? 'active' : 'inactive',
-      },
-    };
+    return document;
   }
   async getDocumentsByEmployee(employeeId: string, currentUser: Users) {
     const employee = await this.userService.getEmployeeByCUandACU(
