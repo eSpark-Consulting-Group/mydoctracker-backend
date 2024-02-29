@@ -69,7 +69,14 @@ export class DeviceService {
   }
 
   async addTelemetry(telemetryData: AddTelemetryDTO, device: DeviceInventory) {
-    device.batteryPercentage = telemetryData.batteryPercentage;
+    device.lastActivity = {
+      batteryPercentage: telemetryData.batteryPercentage,
+      lat: telemetryData.lat,
+      lng: telemetryData.lng,
+      nextUpdateAt: telemetryData.nextUpdateAt,
+      state: telemetryData.state,
+      sentAt: new Date(),
+    };
     await this.deviceInventory.save(device);
     await this.mongodDBService.addDeviceTelemetry(
       {

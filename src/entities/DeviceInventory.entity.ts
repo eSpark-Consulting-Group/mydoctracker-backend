@@ -1,9 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Admin } from './Admin.entity';
 import { Exclude } from 'class-transformer';
 
@@ -19,9 +14,17 @@ export class DeviceInventory {
   @Column({ unique: true, length: 17 })
   macAddress: string;
 
-  @Column({ type: 'numeric', default: 100 })
-  batteryPercentage: number;
-
   @ManyToOne(() => Admin, (admin) => admin.id)
   addedBy: Admin;
+
+  @Column({ type: 'json', default: null, nullable: true })
+  lastActivity: LastActivity;
+}
+export interface LastActivity {
+  batteryPercentage: number;
+  lat: number;
+  lng: number;
+  sentAt: Date;
+  state: string;
+  nextUpdateAt: number;
 }
