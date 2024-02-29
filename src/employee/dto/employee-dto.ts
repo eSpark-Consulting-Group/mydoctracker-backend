@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -72,4 +72,11 @@ export class SubsdiaryIdDTO {
   @IsString()
   @IsNotEmpty()
   readonly subsidiary: string;
+}
+export class SearchFilter {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  readonly search?: string;
 }

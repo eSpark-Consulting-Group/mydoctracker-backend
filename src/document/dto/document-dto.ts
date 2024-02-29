@@ -184,7 +184,7 @@ export class PaginationDTO {
   @IsOptional()
   readonly page: number = DefaultPaginationOptions.page_number;
 }
-export class SearchWithPaginationDTO extends PaginationDTO {
+export class DocumentFilters extends PaginationDTO {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()

@@ -26,7 +26,7 @@ import {
   AddDocumentDTO,
   EditDocumentDTO,
   PaginationDTO,
-  SearchWithPaginationDTO,
+  DocumentFilters,
 } from './dto/document-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/guard/roles-decorator';
@@ -109,7 +109,7 @@ export class DcoumentController {
   @HttpCode(200)
   async getAllEmployeesDocuments(
     @CurrentUser() user: Users,
-    @Query() queryParams: SearchWithPaginationDTO,
+    @Query() queryParams: DocumentFilters,
   ) {
     const { page, limit } = queryParams;
     const data = await this.documentService.getAllEmployeesDocuments(
@@ -136,7 +136,7 @@ export class DcoumentController {
   async getAllDocumentsInSubsidiary(
     @CurrentUser() user: Users,
     @Param() id: ParamDTO,
-    @Query() queryParams: SearchWithPaginationDTO,
+    @Query() queryParams: DocumentFilters,
   ) {
     const { limit, page } = queryParams;
     const data = await this.documentService.getAllDocumentsInSubsidiary(
