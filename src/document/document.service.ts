@@ -82,6 +82,7 @@ export class DocumentService {
         file: '',
         title: documentData.title,
         tracker: device,
+        type: documentData.type,
       });
       if (employeeId) {
         const employee = await this.userService.getEmployeeByCU({
