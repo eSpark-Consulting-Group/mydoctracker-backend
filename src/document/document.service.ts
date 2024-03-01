@@ -217,7 +217,7 @@ export class DocumentService {
       .where('document.id = :id', { id })
       .innerJoin('document.tracker', 't')
       .innerJoin('document.assignee', 'as')
-      .innerJoin('as.subsidiary', 'subsidiary')
+      .leftJoin('as.subsidiary', 'subsidiary')
       .select([
         'document',
         't.lastActivity',
@@ -244,7 +244,9 @@ export class DocumentService {
       return document;
     }
     const document = await queryBuilder
-      .andWhere('document.assigneeId = :assigneeId', { assigneeId: assignee.id })
+      .andWhere('document.assigneeId = :assigneeId', {
+        assigneeId: assignee.id,
+      })
       .getOne();
     if (!document) {
       throw new NotFoundException('Document not found!');
