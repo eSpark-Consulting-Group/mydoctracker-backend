@@ -216,10 +216,24 @@ export class DocumentService {
       .createQueryBuilder('document')
       .where('document.id = :id', { id })
       .innerJoin('document.tracker', 't')
-      .innerJoinAndSelect('document.assignee', 'as');
+      .innerJoin('document.assignee', 'as')
+      .innerJoin('as.subsidiary', 'subsidiary')
+      .select([
+        'document',
+        't.lastActivity',
+        't.id',
+        'as.email',
+        'as.firstName',
+        'as.lastName',
+        'as.username',
+        'as.role',
+        'as.id',
+        'as.contact',
+        'subsidiary.id',
+        'subsidiary.name',
+      ]);
     if (assignee.role === UserRoles.CU) {
       const document = await queryBuilder
-        .innerJoin('as.subsidiary', 'subsidiary')
         .andWhere('subsidiary.createdBy = :createdBy', {
           createdBy: assignee.id,
         })
@@ -230,16 +244,7 @@ export class DocumentService {
       return document;
     }
     const document = await queryBuilder
-      .andWhere('document.assignee = :assignee', { assignee: assignee.id })
-      .select([
-        'document',
-        't.lastActivity',
-        't.id',
-        'as.email',
-        'as.firstName',
-        'as.lastName',
-        'as.contact',
-      ])
+      .andWhere('document.assigneeId = :assigneeId', { assigneeId: assignee.id })
       .getOne();
     if (!document) {
       throw new NotFoundException('Document not found!');
