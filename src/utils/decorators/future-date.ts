@@ -8,11 +8,8 @@ import {
 
 @ValidatorConstraint()
 export class IsAfterNowConstraint implements ValidatorConstraintInterface {
-  validate(epochTime: number) {
-    const utcSeconds = epochTime;
-    const date = new Date(0);
-    date.setUTCSeconds(utcSeconds);
-    return Date.now() < date.getTime();
+  validate(epochTime: Date) {
+    return Date.now() < epochTime.getTime();
   }
 
   defaultMessage(args: ValidationArguments) {

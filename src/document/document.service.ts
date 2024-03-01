@@ -15,6 +15,7 @@ import {
   AddDocumentDTO,
   EditDocumentDTO,
   DocumentFilters,
+  DeviceStatus,
 } from './dto/document-dto';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { S3_ENUMS } from 'enum';
@@ -270,7 +271,7 @@ export class DocumentService {
     options: IPaginationOptions,
     filters: DocumentFilters,
   ) {
-    const { search, type } = filters;
+    const { search, type, status } = filters;
     const queryBuilder = this.documentRepositry
       .createQueryBuilder('document')
       .innerJoin('document.assignee', 'assignee')
@@ -279,6 +280,7 @@ export class DocumentService {
       .select([
         'document',
         'tracker.id',
+        'tracker.lastActivity',
         'assignee.id',
         'assignee.firstName',
         'assignee.lastName',
@@ -292,6 +294,17 @@ export class DocumentService {
     }
     if (type) {
       queryBuilder.andWhere('document.type = :type', { type });
+    }
+    if (status && status === DeviceStatus.ACTIVE) {
+      queryBuilder.andWhere(
+        'JSON_UNQUOTE(JSON_EXTRACT(tracker.lastActivity, "$.nextUpdateAt")) > :now',
+        { now: new Date().toISOString() },
+      );
+    } else if (status && status === DeviceStatus.INACTIVE) {
+      queryBuilder.andWhere(
+        'JSON_UNQUOTE(JSON_EXTRACT(tracker.lastActivity, "$.nextUpdateAt")) < :now',
+        { now: new Date().toISOString() },
+      );
     }
     if (user.role === UserRoles.CU) {
       queryBuilder.andWhere('subsidiary.createdBy = :createdBy', {
@@ -310,7 +323,7 @@ export class DocumentService {
     options: IPaginationOptions,
     filters: DocumentFilters,
   ) {
-    const { search, type } = filters;
+    const { search, type, status } = filters;
     const queryBuilder = this.documentRepositry
       .createQueryBuilder('document')
       .innerJoin('document.assignee', 'assignee')
@@ -332,6 +345,17 @@ export class DocumentService {
       queryBuilder.andWhere(
         '(tracker.id LIKE :trackerId OR assignee.firstName LIKE :name OR assignee.lastName LIKE :name)',
         { trackerId: `%${search}%`, name: `%${search}%` },
+      );
+    }
+    if (status && status === DeviceStatus.ACTIVE) {
+      queryBuilder.andWhere(
+        'JSON_UNQUOTE(JSON_EXTRACT(tracker.lastActivity, "$.nextUpdateAt")) > :now',
+        { now: new Date().toISOString() },
+      );
+    } else if (status && status === DeviceStatus.INACTIVE) {
+      queryBuilder.andWhere(
+        'JSON_UNQUOTE(JSON_EXTRACT(tracker.lastActivity, "$.nextUpdateAt")) < :now',
+        { now: new Date().toISOString() },
       );
     }
     if (type) {

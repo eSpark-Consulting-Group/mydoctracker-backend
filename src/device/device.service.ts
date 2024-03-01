@@ -91,19 +91,10 @@ export class DeviceService {
     if (!device) {
       throw new NotFoundException('No telemetry found for this device');
     }
-    const utcSeconds = device.nextUpdateAt;
-    const deviceNextUpdateAt = new Date(0);
-    deviceNextUpdateAt.setUTCSeconds(utcSeconds);
+    const deviceNextUpdateAt = device.nextUpdateAt;
     const thirtyMinutes = 1.8e6;
     const oneHour = 3.6e6;
-    if (device.state === DeviceStates.idle) {
-      if (deviceNextUpdateAt.getTime() + oneHour > Date.now()) {
-        return { status: true, device };
-      } else {
-        return { status: false, device };
-      }
-    }
-    if (deviceNextUpdateAt.getTime() + thirtyMinutes > Date.now()) {
+    if (deviceNextUpdateAt.getTime() > Date.now()) {
       return { status: true, device };
     } else {
       return { status: false, device };
@@ -235,7 +226,7 @@ export class DeviceService {
       lat: 90,
       lng: 180,
       state: DeviceStates.idle,
-      nextUpdateAt: Math.floor((Date.now() + 60000 * 5) / 1000),
+      nextUpdateAt: new Date(Date.now() + 60000 * 5),
       sentAt: Date.now(),
       batteryPercentage: 100,
     };

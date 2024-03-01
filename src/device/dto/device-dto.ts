@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -60,7 +60,13 @@ export class AddTelemetryDTO {
   })
   @IsNotEmpty()
   @IsAfterNow()
-  readonly nextUpdateAt: number;
+  @Transform(({ value }) => {
+    const utcSeconds = value;
+    const deviceNextUpdateAt = new Date(0);
+    deviceNextUpdateAt.setUTCSeconds(utcSeconds);
+    return deviceNextUpdateAt;
+  })
+  readonly nextUpdateAt: Date;
 }
 
 export class DeviceMacDTO {

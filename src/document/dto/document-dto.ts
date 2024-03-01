@@ -22,6 +22,10 @@ class FieldDto {
   @ApiProperty({ example: 'fieldValue' })
   value: string;
 }
+export enum DeviceStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}
 const transformField = ({ value }) => {
   try {
     const parsedValue = JSON.parse(value);
@@ -197,4 +201,11 @@ export class DocumentFilters extends PaginationDTO {
   @IsOptional()
   @IsEnum(DocumentType)
   readonly type?: DocumentType;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @IsEnum(DeviceStatus)
+  readonly status?: DeviceStatus;
 }
