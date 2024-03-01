@@ -20,7 +20,7 @@ export class DeviceTelemtry {
   @Prop({ required: true, enum: DeviceStates })
   state: string;
   @Prop({ required: true })
-  nextUpdateAt: number;
+  nextUpdateAt: Date;
 }
 export const DeviceTelemetrySchema =
   SchemaFactory.createForClass(DeviceTelemtry);

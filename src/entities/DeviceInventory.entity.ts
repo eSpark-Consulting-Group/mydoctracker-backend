@@ -26,5 +26,5 @@ export interface LastActivity {
   lng: number;
   sentAt: Date;
   state: string;
-  nextUpdateAt: number;
+  nextUpdateAt: Date;
 }
