@@ -27,6 +27,8 @@ import {
   EditEmployeeDTO,
   SearchFilter,
   SubsdiaryIdDTO,
+  GenerateOtpDTO,
+  ResetEmployeePasswordDTO,
 } from './dto/employee-dto';
 import { CurrentUser } from 'src/utils/decorators/current-user';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -137,6 +139,47 @@ export class EmployeeController {
       data,
       message: 'Employees have been fetched successfully!',
       status: 'success',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get OTP for resetting employee password',
+  })
+  @Roles([UserRoles.CU])
+  @UseGuards(JwtGuard)
+  @Post('/otp')
+  @HttpCode(200)
+  async generateOTP(
+    @Body() { employeeId }: GenerateOtpDTO,
+    @CurrentUser() user: Users,
+  ) {
+    await this.employeeService.generateOTPForResetPassword(employeeId, user);
+    return {
+      status: 'success',
+      message: 'OTP has been sent to your email address!',
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Resetting employee password',
+  })
+  @Roles([UserRoles.CU])
+  @UseGuards(JwtGuard)
+  @Post('/changepassword')
+  @HttpCode(200)
+  async resetEmployeePassword(
+    @Body() resetData: ResetEmployeePasswordDTO,
+  ) {
+    await this.employeeService.changeEmployeePassword(
+      resetData.employeeId,
+      resetData.otp,
+      resetData.employeeNewPassword,
+    );
+    return {
+      status: 'success',
+      message: 'OTP has been sent to your email address!',
     };
   }
 

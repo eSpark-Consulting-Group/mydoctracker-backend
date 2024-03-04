@@ -50,6 +50,6 @@ import { Firmware } from 'src/entities/Firmware.entity';
     OTPService,
     FirmwareService,
   ],
-  exports: [DocumentService],
+  exports: [DocumentService, TypeOrmModule],
 })
 export class DocumentModule {}

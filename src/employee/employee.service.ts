@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,13 +11,22 @@ import { UsersService } from 'src/users/users.service';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { S3_ENUMS } from 'enum';
 import { IPaginationOptions } from 'nestjs-typeorm-paginate';
+import { DocumentService } from '../document/document.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OTPService } from 'src/otp/otp.service';
+import { OTP, OtpPurpose } from 'src/entities/otp.entity';
 
 @Injectable()
 export class EmployeeService {
   constructor(
+    @InjectRepository(Users)
+    private userRepositry: Repository<Users>,
     private subsidiaryService: SubsidiaryService,
     private userService: UsersService,
     private fileUploadService: CloudStorageService,
+    private documentService: DocumentService,
+    private otpService: OTPService,
   ) {}
   async addEmployee(user: Users, data: AddEmployeeDTO) {
     try {
@@ -135,6 +145,34 @@ export class EmployeeService {
       throw new NotFoundException('Employee not found!');
     }
   }
+  async generateOTPForResetPassword(employeeId: string, user: Users) {
+    const employee = await this.userService.getEmployeeById(employeeId);
+    if (user.subsidiary.admin != user) {
+      throw new ForbiddenException('User does not exist in your subsidiary');
+    }
+    const otp = await this.documentService.generateOTPForAddDoc(employee);
+    console.log(otp.otp);
+    return otp;
+  }
+
+  async changeEmployeePassword(
+    employeeId: string,
+    otp: number,
+    employeeNewPassword: string,
+  ) {
+    const employee = await this.userService.getEmployeeById(employeeId);
+    const otpID = await this.otpService.verifyOTP(
+      employee,
+      OtpPurpose.reset_employee_password,
+      otp,
+    );
+
+    employee.employeePassword =
+      this.userService.hashPassword(employeeNewPassword);
+    await this.userRepositry.save(employee);
+    await this.otpService.deleteOtp(otpID);
+  }
+
   async getAllEmployeesBySubsidiary(
     user: Users,
     subsidiaryId: string,

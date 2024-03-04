@@ -320,6 +320,16 @@ export class UsersService {
       });
     return paginate(queryBuilder, options);
   }
+
+  async getEmployeeById(employeeId: string) {
+    const employee = await this.userRepositry.findOne({
+      where: {
+        id: employeeId,
+      },
+    });
+    return employee;
+  }
+
   async getAllEmployees(
     user: Users,
     options: IPaginationOptions,
