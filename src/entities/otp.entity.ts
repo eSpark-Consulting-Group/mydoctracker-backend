@@ -3,6 +3,7 @@ import { Users } from './User.entity';
 
 export enum OtpPurpose {
   add_document = 'add_document',
+  change_password = 'change_password',
 }
 
 @Entity()
@@ -19,6 +20,6 @@ export class OTP {
   @ManyToOne(() => Users, (user) => user.id)
   user: Users;
 
-  @Column({ type: 'timestamp'})
+  @Column({ type: 'timestamp' })
   expiresAt: Date;
 }
