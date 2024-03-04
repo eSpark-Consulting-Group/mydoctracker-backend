@@ -5,11 +5,18 @@ import {
 } from '@nestjs/common';
 import { UserRoles, Users } from 'src/entities/User.entity';
 import { SubsidiaryService } from 'src/subsidiary/subsidiary.service';
-import { AddEmployeeDTO, EditEmployeeDTO } from './dto/employee-dto';
+import {
+  AddEmployeeDTO,
+  EditEmployeeDTO,
+  ResetPasswordDTO,
+} from './dto/employee-dto';
 import { UsersService } from 'src/users/users.service';
 import { CloudStorageService } from 'src/utils/helpers/cloud-storage';
 import { S3_ENUMS } from 'enum';
 import { IPaginationOptions } from 'nestjs-typeorm-paginate';
+import { OTPService } from 'src/otp/otp.service';
+import { OtpPurpose } from 'src/entities/otp.entity';
+import { EmailService } from 'src/utils/helpers/email';
 
 @Injectable()
 export class EmployeeService {
@@ -17,6 +24,8 @@ export class EmployeeService {
     private subsidiaryService: SubsidiaryService,
     private userService: UsersService,
     private fileUploadService: CloudStorageService,
+    private otpService: OTPService,
+    private emailService: EmailService,
   ) {}
   async addEmployee(user: Users, data: AddEmployeeDTO) {
     try {
@@ -152,5 +161,45 @@ export class EmployeeService {
     search: string,
   ) {
     return this.userService.getAllEmployees(user, options, search);
+  }
+  async generateOTPForPassword(currentUser: Users, userId: string) {
+    const createdBy = currentUser.id;
+    const user = await this.userService.getEmployeeByCU({
+      createdBy,
+      userId,
+    });
+    if (!user) {
+      throw new NotFoundException('Employee not found!');
+    }
+    const expiresAt = new Date(Date.now() + 60000);
+    const otp = await this.otpService.generatOTP(
+      user,
+      OtpPurpose.change_password,
+      expiresAt,
+    );
+    await this.emailService.sendOtpEmail(currentUser.email, otp.otp);
+  }
+  async resetEmployeePassword(
+    currentUser: Users,
+    data: ResetPasswordDTO,
+    employeeId: string,
+  ) {
+    const createdBy = currentUser.id;
+    const userId = employeeId;
+    const employee = await this.userService.getEmployeeByCU({
+      createdBy,
+      userId,
+    });
+    if (!employee) {
+      throw new NotFoundException('Employee not found!');
+    }
+    const otpID = await this.otpService.verifyOTP(
+      employee,
+      OtpPurpose.change_password,
+      data.otp,
+    );
+    employee.hashedPassword = this.userService.hashPassword(data.password);
+    await this.userService.save(employee);
+    await this.otpService.deleteOtp(otpID);
   }
 }

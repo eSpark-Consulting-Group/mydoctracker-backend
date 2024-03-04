@@ -25,6 +25,7 @@ import { UserRoles, Users } from 'src/entities/User.entity';
 import {
   AddEmployeeDTO,
   EditEmployeeDTO,
+  ResetPasswordDTO,
   SearchFilter,
   SubsdiaryIdDTO,
 } from './dto/employee-dto';
@@ -39,6 +40,41 @@ import { PaginationDTO } from 'src/document/dto/document-dto';
 @UseGuards(JwtGuard)
 export class EmployeeController {
   constructor(private employeeService: EmployeeService) {}
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Reset Employee Password using Employee ID',
+  })
+  @Roles([UserRoles.CU])
+  @Put('/reset-password/:id')
+  @HttpCode(200)
+  async resetPassword(
+    @Body() reqData: ResetPasswordDTO,
+    @CurrentUser() user: Users,
+    @Param() param: ParamDTO,
+  ) {
+    await this.employeeService.resetEmployeePassword(user, reqData, param.id);
+    return {
+      message: 'Password has been reset successfully!',
+      status: 'success',
+    };
+  }
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Generate OTP for change password',
+  })
+  @Roles([UserRoles.CU])
+  @Get('/reset-password/:id')
+  @HttpCode(200)
+  async generateOTPForPassword(
+    @Param() param: ParamDTO,
+    @CurrentUser() user: Users,
+  ) {
+    await this.employeeService.generateOTPForPassword(user, param.id);
+    return {
+      message: 'OTP has been sent to your email address!',
+      status: 'success',
+    };
+  }
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Add an employee (CU only)',
