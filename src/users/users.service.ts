@@ -69,14 +69,9 @@ export class UsersService {
       });
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };
-      let token;
-      if (newUser?.rememberMe) {
-        token = await this.jwtService.signAsync(payload);
-      } else {
-        token = await this.jwtService.signAsync(payload, {
-          expiresIn: process.env.JWT_EXPIRE,
-        });
-      }
+      const token = await this.jwtService.signAsync(payload, {
+        expiresIn: process.env.JWT_EXPIRE,
+      });
       return { user, token };
     } catch (error) {
       if (error.errno === 1062) {
@@ -99,14 +94,9 @@ export class UsersService {
       });
       const user = await this.userRepositry.save(createdUser);
       const payload = { id: user.id, email: user.email };
-      let token;
-      if (newUser?.rememberMe) {
-        token = await this.jwtService.signAsync(payload);
-      } else {
-        token = await this.jwtService.signAsync(payload, {
-          expiresIn: process.env.JWT_EXPIRE,
-        });
-      }
+      const token = await this.jwtService.signAsync(payload, {
+        expiresIn: process.env.JWT_EXPIRE,
+      });
       return { user, token };
     } catch (error) {
       if (error.errno === 1062) {
@@ -135,14 +125,9 @@ export class UsersService {
       throw new UnauthorizedException(`Username or password invalid`);
     }
     const payload = { id: user.id, email: user.email };
-    let token;
-    if (userCreds?.rememberMe) {
-      token = await this.jwtService.signAsync(payload);
-    } else {
-      token = await this.jwtService.signAsync(payload, {
-        expiresIn: process.env.JWT_EXPIRE,
-      });
-    }
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
     return { user, token };
   }
 

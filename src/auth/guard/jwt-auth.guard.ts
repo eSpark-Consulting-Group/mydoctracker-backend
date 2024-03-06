@@ -23,28 +23,56 @@ export class JwtGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
-    const changePassPath = `/${STRINGS.USERS_ROUTE}/${STRINGS.CHANGE_PASSWORD_ROUTE}`;
-    if (request.path === changePassPath && request.query?.token) {
-      return true;
-    }
-    if (!token) {
-      throw new APIException(
-        {
-          status: 'error',
-          message:
-            'No token found! Please enter a valid token to continue further.',
-        },
-        HttpStatus.UNAUTHORIZED,
+    try {
+      const request = context.switchToHttp().getRequest();
+      const token = this.extractTokenFromHeader(request);
+      const changePassPath = `/${STRINGS.USERS_ROUTE}/${STRINGS.CHANGE_PASSWORD_ROUTE}`;
+      if (request.path === changePassPath && request.query?.token) {
+        return true;
+      }
+      if (!token) {
+        throw new APIException(
+          {
+            status: 'error',
+            message:
+              'No token found! Please enter a valid token to continue further.',
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      const user = await this.userSerive.getUserDetails(payload.id);
+      request.user = user;
+      if (!user)
+        throw new APIException(
+          {
+            status: 'error',
+            message: 'Invalid sign in! Please use a valid token to continue.',
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
+
+      if (request.user.status !== UserStatus.ACTIVE)
+        throw new APIException(
+          {
+            status: 'error',
+            message: 'Your account has been deactivated! ',
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
+      const roles = this.reflector.get(Roles, context.getHandler()) || [];
+      if (roles.length === 0 || roles.includes(user.role)) {
+        return true;
+      }
+      throw new UnauthorizedException(
+        "You're not allowed to use this resource",
       );
-    }
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_SECRET,
-    });
-    const user = await this.userSerive.getUserDetails(payload.id);
-    request.user = user;
-    if (!user)
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token has been expired');
+      }
       throw new APIException(
         {
           status: 'error',
@@ -52,20 +80,7 @@ export class JwtGuard implements CanActivate {
         },
         HttpStatus.UNAUTHORIZED,
       );
-
-    if (request.user.status !== UserStatus.ACTIVE)
-      throw new APIException(
-        {
-          status: 'error',
-          message: 'Your account has been deactivated! ',
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
-    const roles = this.reflector.get(Roles, context.getHandler()) || [];
-    if (roles.length === 0 || roles.includes(user.role)) {
-      return true;
     }
-    throw new UnauthorizedException("You're not allowed to use this resource");
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
