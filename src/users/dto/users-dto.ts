@@ -87,14 +87,6 @@ export class SUSignupDTO {
   @IsDefined()
   @Matches(CONTACT_REGEX, { message: invalidContactMsg })
   readonly contact: string;
-
-  @ApiProperty({
-    type: String,
-    example: true,
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly rememberMe?: boolean;
 }
 export class CUSignupDTO {
   @ApiProperty({
@@ -156,14 +148,6 @@ export class CUSignupDTO {
   @IsDefined()
   @Matches(CONTACT_REGEX, { message: invalidContactMsg })
   readonly contact: string;
-
-  @ApiProperty({
-    type: String,
-    example: true,
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly rememberMe?: boolean;
 }
 
 export class SigninDTO {
@@ -191,14 +175,6 @@ export class SigninDTO {
       'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character',
   })
   readonly password: string;
-
-  @ApiProperty({
-    type: String,
-    example: true,
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly rememberMe: boolean;
 }
 export class ChangePasswordDTO {
   @ApiProperty({
