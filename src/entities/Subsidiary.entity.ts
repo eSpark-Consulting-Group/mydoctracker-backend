@@ -20,9 +20,11 @@ export class Subsidiary {
 
   @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'createdBy' })
-  createdBy: Users;
+  @Column({ type: 'varchar', length: 36 })
+  createdBy: string;
 
   @OneToOne(() => Users, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'admin' })
-  admin: Users;
+  @Column({ type: 'varchar', length: 36, default: null })
+  admin: string;
 }

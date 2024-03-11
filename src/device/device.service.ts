@@ -40,7 +40,7 @@ export class DeviceService {
 
   private async getCurrentUserDocument(assignee: Users, id: string) {
     const document = await this.documentRepositry.findOne({
-      where: { id, assigneeId: assignee.id },
+      where: { id, assignee: assignee.id },
     });
     if (!document) {
       throw new NotFoundException('Document not found!');

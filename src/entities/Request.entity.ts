@@ -15,9 +15,8 @@ export enum RequestType {
   SHARE = 'SHARE',
 }
 export enum RequestStatus {
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-  PENDING = 'PENDING',
+  APPROVE = 'APPROVE',
+  REJECT = 'REJECT',
 }
 @Entity()
 export class Request {
@@ -32,20 +31,16 @@ export class Request {
 
   @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'createdBy' })
-  createdBy: Users;
-
-  @ManyToOne(() => Users, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'attendedBy' })
-  attendedBy: Users;
+  @Column({ type: 'varchar', length: 36 })
+  createdBy: string;
 
   @ManyToOne(() => Subsidiary, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'subsidiary' })
-  subsidiary: Subsidiary;
+  @Column({ type: 'varchar', length: 36 })
+  subsidiary: string;
 
   @OneToOne(() => Document, { nullable: false, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'documentId' })
-  document: Document;
-
-  @Column()
-  documentId: string;
+  @JoinColumn({ name: 'document' })
+  @Column({ type: 'varchar', length: 36 })
+  document: string;
 }

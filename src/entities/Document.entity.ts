@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { Users } from './User.entity';
 import { DeviceInventory } from './DeviceInventory.entity';
-import { DocumentHistory } from './DocumentHistory.entity';
 import { DocumentType } from 'enum';
 
 export enum IdleStateIntervals {
@@ -25,8 +24,9 @@ export class Document {
   id: string;
 
   @OneToOne(() => DeviceInventory, { cascade: true })
-  @JoinColumn()
-  tracker: DeviceInventory;
+  @JoinColumn({ name: 'tracker' })
+  @Column({ type: 'varchar', length: 36 })
+  tracker: string;
 
   @Column({ type: 'enum', enum: DocumentType })
   type: DocumentType;
@@ -53,17 +53,12 @@ export class Document {
   active: boolean;
 
   @ManyToOne(() => Users, { nullable: false, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'assigneeId' })
-  assignee: Users;
-
-  @Column()
-  assigneeId: string;
+  @JoinColumn({ name: 'assignee' })
+  @Column({ type: 'varchar', length: 36 })
+  assignee: string;
 
   @Column({ type: 'json', default: null })
   meta: Meta;
-  
-  @OneToMany(() => DocumentHistory, (history) => history.document)
-  history: DocumentHistory[];
 }
 
 export interface Meta {

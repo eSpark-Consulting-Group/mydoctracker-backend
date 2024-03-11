@@ -51,10 +51,9 @@ export class EmployeeService {
       const employee = this.userService.create({
         contact,
         email,
-        employeePassword: password,
         firstName,
         lastName,
-        subsidiary: foundSubsidiary,
+        subsidiary: foundSubsidiary.id,
         hashedPassword: this.userService.hashPassword(password),
         username,
         role,
@@ -73,7 +72,7 @@ export class EmployeeService {
             "There's already an admin for this subsidiary",
           );
         }
-        foundSubsidiary.admin = newEmployee;
+        foundSubsidiary.admin = newEmployee.id;
         await this.subsidiaryService.save(foundSubsidiary);
       }
       return newEmployee;

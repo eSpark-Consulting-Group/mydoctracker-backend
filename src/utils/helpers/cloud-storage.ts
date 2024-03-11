@@ -25,11 +25,10 @@ export class CloudStorageService {
     const data = await this.b2.getUploadUrl({
       bucketId: process.env.BUCKET_ID,
     });
-    const fileExtension = extname(file.originalname);
     const response = await this.b2.uploadFile({
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,
-      fileName: `${folderName}/${user.id}${fileExtension}`,
+      fileName: `${folderName}/${user.id}.jpg`,
       data: file.buffer,
     });
     if (response) {

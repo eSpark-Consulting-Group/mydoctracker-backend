@@ -41,7 +41,7 @@ export class DocumentService {
   ) {}
   async getCurrentUserDoc(id: string, assignee: Users) {
     const document = await this.documentRepositry.findOne({
-      where: { id, active: true, assigneeId: assignee.id },
+      where: { id, active: true, assignee: assignee.id },
     });
     if (!document) {
       throw new NotFoundException('Document not found');
@@ -77,12 +77,11 @@ export class DocumentService {
         throw new BadRequestException('Device is offline');
       }
       const newDocument = this.documentRepositry.create({
-        assigneeId: user.id,
-        assignee: user,
+        assignee: user.id,
         creationDate: documentData.creationDate,
         file: '',
         title: documentData.title,
-        tracker: device,
+        tracker: device.id,
         type: documentData.type,
       });
       if (employeeId) {
@@ -93,8 +92,7 @@ export class DocumentService {
         if (!employee) {
           throw new NotFoundException('Employee not found!');
         }
-        newDocument.assigneeId = employee.id;
-        newDocument.assignee = employee;
+        newDocument.assignee = employee.id;
       } else if (user.role !== UserRoles.SU) {
         throw new ForbiddenException(
           "You're not allowd to add document for yourself",
@@ -120,10 +118,9 @@ export class DocumentService {
         type: document.type,
         title: document.title,
         creationDate: document.creationDate,
-        documentId: document.id,
+        document: document.id,
         file: document.file,
         meta: document.meta,
-        document: document,
       });
       await this.documentHistoryRepositry.save(documentHistory);
       await this.otpService.deleteOtp(otpID);
@@ -135,19 +132,27 @@ export class DocumentService {
       throw error;
     }
   }
-  async editDocument(user: Users, documentData: EditDocumentDTO, id: string) {
-    if (user.role === UserRoles.BCU && !user.accessibility?.doc) {
+  async editDocument(
+    user: Users,
+    documentData: EditDocumentDTO,
+    id: string,
+    isRequest?: boolean,
+  ) {
+    if (user.role === UserRoles.BCU && !user.accessibility?.doc && !isRequest) {
       throw new UnauthorizedException('You cannot edit document');
     }
     const document = await this.getCurrentUserDoc(id, user);
     const file = documentData.file;
-    if (file) {
+    if (file && !isRequest) {
       const response = await this.fileUploadService.uploadDocumentFile(
         file,
         user,
         S3_ENUMS.docs,
       );
       document.file = `${S3_ENUMS.URL}/${response.fileName}`;
+    }
+    if (file && isRequest) {
+      document.file = file as unknown as string;
     }
     document.creationDate = documentData.creationDate || document.creationDate;
     document.title = documentData.title || document.title;
@@ -162,10 +167,9 @@ export class DocumentService {
       type: document.type,
       title: document.title,
       creationDate: document.creationDate,
-      documentId: document.id,
+      document: document.id,
       file: document.file,
       meta: document.meta,
-      document: document,
     });
     await this.documentRepositry.save(document);
     await this.documentHistoryRepositry.save(documentHistory);
@@ -182,7 +186,7 @@ export class DocumentService {
   ) {
     const queryBuilder = this.documentHistoryRepositry
       .createQueryBuilder('history')
-      .where('history.documentId = :id', { id })
+      .where('history.document = :id', { id })
       .orderBy('history.createdAt', 'DESC');
     if (assignee.role === UserRoles.CU) {
       const document = await this.documentRepositry
@@ -245,8 +249,8 @@ export class DocumentService {
       return document;
     }
     const document = await queryBuilder
-      .andWhere('document.assigneeId = :assigneeId', {
-        assigneeId: assignee.id,
+      .andWhere('document.assignee = :assignee', {
+        assignee: assignee.id,
       })
       .getOne();
     if (!document) {
@@ -263,7 +267,7 @@ export class DocumentService {
       throw new NotFoundException('Employee not found!');
     }
     return this.documentRepositry.find({
-      where: { assigneeId: employee.id, active: true },
+      where: { assignee: employee.id, active: true },
     });
   }
   async getAllEmployeesDocuments(

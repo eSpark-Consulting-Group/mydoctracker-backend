@@ -52,7 +52,6 @@ export class UsersService {
   getUserDetails(id: string) {
     return this.userRepositry.findOne({
       where: { id },
-      relations: ['subsidiary'],
     });
   }
   async signupSU(newUser: SUSignupDTO) {
@@ -355,7 +354,17 @@ export class UsersService {
     return this.userRepositry.save(user);
   }
 
-  create(user: Object) {
+  create(user: {
+    contact: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    subsidiary: string;
+    hashedPassword: string;
+    username: string;
+    role: UserRoles;
+    address: string;
+  }) {
     return this.userRepositry.create(user);
   }
 

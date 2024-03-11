@@ -16,7 +16,9 @@ export class OTPService {
   ) {}
 
   async generatOTP(user: Users, purpose: OtpPurpose, expiresAt: Date) {
-    const otp = await this.otpRepositry.findOne({ where: { user, purpose } });
+    const otp = await this.otpRepositry.findOne({
+      where: { user: user.id, purpose },
+    });
     if (otp) {
       otp.otp = Math.floor(1000 + Math.random() * 9000);
       otp.expiresAt = expiresAt;
@@ -25,7 +27,7 @@ export class OTPService {
     const newOtp = this.otpRepositry.create({
       otp: Math.floor(1000 + Math.random() * 9000),
       purpose,
-      user,
+      user: user.id,
       expiresAt,
     });
     return this.otpRepositry.save(newOtp);
@@ -33,7 +35,7 @@ export class OTPService {
 
   async verifyOTP(user: Users, purpose: OtpPurpose, otp: number) {
     const otpFound = await this.otpRepositry.findOne({
-      where: { user, purpose, otp },
+      where: { user: user.id, purpose, otp },
     });
     if (!otpFound) {
       throw new UnauthorizedException('Invalid OTP');
