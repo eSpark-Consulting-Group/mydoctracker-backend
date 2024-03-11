@@ -11,21 +11,23 @@ export class SubsidiaryService {
     private subsidiaryRepositry: Repository<Subsidiary>,
   ) {}
   getSubsidiaryByOwner(user: Users, id: string) {
-    return this.subsidiaryRepositry.findOne({ where: { id, createdBy: user } });
+    return this.subsidiaryRepositry.findOne({
+      where: { id, createdBy: user.id },
+    });
   }
   getSubsidiaryById(id: string) {
     return this.subsidiaryRepositry.findOne({ where: { id } });
   }
   async createSubsidiary(user: Users, data: CreateSubsidiaryDTO) {
     const newSubsidiary = this.subsidiaryRepositry.create({
-      createdBy: user,
+      createdBy: user.id,
       name: data.name,
     });
     return this.subsidiaryRepositry.save(newSubsidiary);
   }
   async editSubsidiary(user: Users, data: CreateSubsidiaryDTO, id: string) {
     const subsidiary = await this.subsidiaryRepositry.findOne({
-      where: { id, createdBy: user },
+      where: { id, createdBy: user.id },
     });
     if (!subsidiary) {
       throw new NotFoundException('Subsidiary not found!');
@@ -35,7 +37,7 @@ export class SubsidiaryService {
   }
   async deleteSubsidiary(user: Users, id: string) {
     const subsidiary = await this.subsidiaryRepositry.findOne({
-      where: { id, createdBy: user },
+      where: { id, createdBy: user.id },
     });
     if (!subsidiary) {
       throw new NotFoundException('Subsidiary not found!');
@@ -48,7 +50,7 @@ export class SubsidiaryService {
   }
   async getAllSubsidiaries(user: Users) {
     return this.subsidiaryRepositry.find({
-      where: { createdBy: user },
+      where: { createdBy: user.id },
     });
   }
   save(subsidiary: Subsidiary) {

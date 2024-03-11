@@ -72,14 +72,16 @@ export class JwtGuard implements CanActivate {
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Token has been expired');
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new APIException(
+          {
+            status: 'error',
+            message: 'Invalid sign in! Please use a valid token to continue.',
+          },
+          HttpStatus.UNAUTHORIZED,
+        );
       }
-      throw new APIException(
-        {
-          status: 'error',
-          message: 'Invalid sign in! Please use a valid token to continue.',
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw error;
     }
   }
 

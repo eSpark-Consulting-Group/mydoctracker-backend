@@ -48,10 +48,6 @@ export class Users {
   @Column({ unique: true, length: 100 })
   email: string;
 
-  @Column({ nullable: true, default: null })
-  @Exclude()
-  employeePassword: string;
-
   @Column()
   @Exclude()
   hashedPassword: string;
@@ -80,7 +76,8 @@ export class Users {
 
   @ManyToOne(() => Subsidiary, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'subsidiary' })
-  subsidiary: Subsidiary;
+  @Column({ default: null, type: 'varchar', length: 36 })
+  subsidiary: string;
 }
 
 export interface UserMeta {

@@ -33,10 +33,4 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-/src/TrackerHub/node_modules
-/src/TrackerHub/build
-/src/TrackerHub/dist
-/TrackerHub/node_modules
-/TrackerHub/build
-/TrackerHub/dist
 .env

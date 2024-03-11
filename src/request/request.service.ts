@@ -31,15 +31,15 @@ export class RequestService {
     }
     const document = await this.documentService.getCurrentUserDoc(docID, user);
     const foundRequest = await this.requestRepositry.findOneBy({
-      documentId: document.id,
-      createdBy: user,
+      document: document.id,
+      createdBy: user.id,
     });
 
     if (foundRequest) {
       throw new ConflictException('Request already created!');
     }
     const subsidiary = await this.subsidiaryService.getSubsidiaryById(
-      user.subsidiary.id,
+      user.subsidiary,
     );
     let file: string = null;
     if (data.file) {
@@ -52,12 +52,11 @@ export class RequestService {
     }
     if (data) delete data.file;
     const req = this.requestRepositry.create({
-      createdBy: user,
+      createdBy: user.id,
       meta: data,
       type: RequestType.DOC,
-      subsidiary,
-      document,
-      documentId: document.id,
+      subsidiary: subsidiary.id,
+      document: document.id,
     });
     if (file) req.meta = { ...req.meta, file };
     return this.requestRepositry.save(req);
@@ -106,11 +105,12 @@ export class RequestService {
     if (!request) {
       throw new NotFoundException('Request not found!');
     }
-    if (status === RequestStatus.APPROVED) {
+    if (status === RequestStatus.APPROVE) {
       await this.documentService.editDocument(
-        request.createdBy,
+        request.createdBy as unknown as Users,
         request.meta,
-        request.documentId,
+        request.document,
+        true,
       );
     }
     return this.requestRepositry.delete({ id: request.id });

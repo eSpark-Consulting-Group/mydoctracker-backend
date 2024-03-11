@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Users } from './User.entity';
 
 export enum OtpPurpose {
@@ -18,7 +24,9 @@ export class OTP {
   purpose: OtpPurpose;
 
   @ManyToOne(() => Users, (user) => user.id)
-  user: Users;
+  @JoinColumn({ name: 'user' })
+  @Column({ type: 'varchar', length: 36 })
+  user: string;
 
   @Column({ type: 'timestamp' })
   expiresAt: Date;

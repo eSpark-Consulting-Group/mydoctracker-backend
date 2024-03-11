@@ -29,11 +29,9 @@ export class DocumentHistory {
   meta: Meta;
 
   @ManyToOne(() => Document, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'documentId' })
-  document: Document;
-
+  @JoinColumn({ name: 'document' })
   @Column()
-  documentId: string;
+  document: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

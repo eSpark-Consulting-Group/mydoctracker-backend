@@ -3,14 +3,14 @@ import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { RequestStatus } from 'src/entities/Request.entity';
 
 enum ResponseEnum {
-  APPROVED = RequestStatus.APPROVED,
-  REJECTED = RequestStatus.REJECTED,
+  APPROVE = RequestStatus.APPROVE,
+  REJECT = RequestStatus.REJECT,
 }
 
 export class RequestUpdateDTO {
   @ApiProperty({
     type: String,
-    example: ResponseEnum.APPROVED,
+    example: ResponseEnum.APPROVE,
   })
   @IsString()
   @IsNotEmpty()
