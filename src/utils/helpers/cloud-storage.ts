@@ -36,6 +36,31 @@ export class CloudStorageService {
     }
     return undefined;
   }
+
+  async uploadReportFile(
+    file: Express.Multer.File,
+    user: Users,
+    folderName: string,
+  ): Promise<{ fileId: string; fileName: string }> {
+    await this.b2.authorize(); // must authorize first (authorization lasts 24 hrs)
+    const data = await this.b2.getUploadUrl({
+      bucketId: process.env.BUCKET_ID,
+    });
+
+    const reportUuid = uuidv4();
+
+    const response = await this.b2.uploadFile({
+      uploadUrl: data.data.uploadUrl,
+      uploadAuthToken: data.data.authorizationToken,
+      fileName: `${folderName}/${user.id}/${reportUuid}.jpg`,
+      data: file.buffer,
+    });
+    if (response) {
+      return { fileId: response.data.fileId, fileName: response.data.fileName };
+    }
+    return undefined;
+  }
+
   async uploadDocumentFile(
     file: Express.Multer.File,
     user: Users,

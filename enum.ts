@@ -12,6 +12,7 @@ export enum S3_ENUMS {
   profile_pictures = 'profile_pictures',
   docs = 'docs',
   firmwares = 'firmwares',
+  reports = 'reports',
 }
 export enum DocumentType {
   SINGLE = 'SINGLE',
