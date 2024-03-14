@@ -3,11 +3,9 @@ import {
   Controller,
   Get,
   HttpCode,
-  Ip,
   Post,
   Put,
   Query,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -32,11 +30,12 @@ import {
 import { APIResponseType } from 'src/utils/APIResponse';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/utils/decorators/current-user';
-import { Users } from 'src/entities/User.entity';
+import { UserRoles, Users } from 'src/entities/User.entity';
 import { ApiKeyAuthGuard } from 'src/auth/guard/apikey-auth.guard';
 import { STRINGS } from 'enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileValidator } from 'src/utils/helpers/file.validation';
+import { Roles } from 'src/auth/guard/roles-decorator';
 
 @Controller(STRINGS.USERS_ROUTE)
 @ApiTags('Users')
@@ -88,10 +87,9 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Change Password',
-    description:
-      'Facilitates the password change process for a specific user identified by "username". Accepts "ChangePasswordDTO" containing old and new password details for validation. Utilizes the "UserService.changePassword" method to update the user password securely, requiring correct authentication before modifying the password data. The endpoint responds with a "status" indicating success upon a successful password change. It ensures security and data integrity by enforcing the password change only for the authenticated user. Failed password change attempts prompt relevant error responses or appropriate status codes. This endpoint is crucial for ensuring user account security and password management.',
   })
   @UseGuards(ApiKeyAuthGuard, JwtGuard)
+  @Roles([UserRoles.SU, UserRoles.CU])
   @ApiQuery({ name: 'token', required: false })
   @Put(`${STRINGS.CHANGE_PASSWORD_ROUTE}`)
   @HttpCode(200)
@@ -109,10 +107,9 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update Profile',
-    description:
-      'Updates user profile information, including a new profile picture. Accepts an "UpdateProfileDTO" in the request body for other profile details. The "UploadedFile" decorator captures a "profilePicture" file from the request. Utilizes the "UserService.updateProfile" method to apply changes to the user profile. Requires the authenticated user details obtained from the "@CurrentUser" decorator.  Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users to modify their profile details and upload a new profile picture.',
   })
   @UseGuards(JwtGuard)
+  @Roles([UserRoles.SU, UserRoles.CU])
   @Put('/update')
   @HttpCode(200)
   @ApiConsumes('multipart/form-data')
@@ -138,22 +135,11 @@ export class UsersController {
 
   @ApiOperation({
     summary: 'Generate password reset link',
-    description:
-      'Initiates the password reset process for a user who has forgotten their password. Accepts "ForgotPasswordDTO" containing the user email for identification. Captures the client IP address using the "@Ip" decorator and device information from the request. Utilizes the "UserService.forgotPassword" method to generate a password reset token and send an email with instructions for resetting the password. Responds with "status" indicating the success of the operation and a confirmation "message". This endpoint is crucial for users who need to recover access to their accounts.',
   })
   @Post('/password/forget')
   @HttpCode(200)
-  async forgotPassword(
-    @Body() reqData: ForgotPasswordDTO,
-    @Ip() ip: string,
-    @Req() request: any,
-  ) {
-    await this.userService.forgotPassword(
-      reqData.email,
-      ip,
-      request.device,
-      reqData.host,
-    );
+  async forgotPassword(@Body() reqData: ForgotPasswordDTO) {
+    await this.userService.forgotPassword(reqData.email, reqData.host);
     return {
       status: 'success',
       message: 'Email has been sent for password reset!',

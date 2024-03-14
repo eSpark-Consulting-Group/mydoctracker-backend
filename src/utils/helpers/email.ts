@@ -41,4 +41,18 @@ export class EmailService {
       throw error;
     }
   }
+
+  async sendBatteryAlert(email: string, batteryPerc: number) {
+    try {
+      const mail: MailDataRequired = {
+        to: email,
+        from: process.env.SENDGRID_SENDER_EMAIL,
+        subject: 'Battery Alert',
+        html: `Your battery is ${batteryPerc}%`,
+      };
+      await SendGrid.send(mail);
+    } catch (error) {
+      throw error;
+    }
+  }
 }
