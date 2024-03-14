@@ -23,7 +23,7 @@ export class Document {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => DeviceInventory, { cascade: true })
+  @OneToOne(() => DeviceInventory, (device) => device.document, { cascade: true })
   @JoinColumn({ name: 'tracker' })
   @Column({ type: 'varchar', length: 36 })
   tracker: string;

@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Admin } from 'src/entities/Admin.entity';
 import * as bcrypt from 'bcrypt';
 import { FirmwareService } from 'src/firmware/firmware.service';
+import { EmailService } from 'src/utils/helpers/email';
 
 @Injectable()
 export class DeviceService {
@@ -36,6 +37,7 @@ export class DeviceService {
     private adminRepositry: Repository<Admin>,
     private mongodDBService: MongoDBService,
     private firmwareService: FirmwareService,
+    private emailService: EmailService,
   ) {}
 
   private async getCurrentUserDocument(assignee: Users, id: string) {
@@ -77,6 +79,20 @@ export class DeviceService {
       state: telemetryData.state,
       sentAt: new Date(),
     };
+    const email: string = device?.document?.assignee?.['email'];
+    if (
+      telemetryData.batteryPercentage <= 25 &&
+      device.notificationFlag &&
+      email
+    ) {
+      await this.emailService.sendBatteryAlert(
+        email,
+        telemetryData.batteryPercentage,
+      );
+      device.notificationFlag = false;
+    } else {
+      device.notificationFlag = true;
+    }
     await this.deviceInventory.save(device);
     await this.mongodDBService.addDeviceTelemetry(
       {
@@ -281,7 +297,14 @@ export class DeviceService {
   }
 
   getDeviceByMac(macAddress: string) {
-    return this.deviceInventory.findOne({ where: { macAddress } });
+    return this.deviceInventory.findOne({
+      where: { macAddress },
+      relations: {
+        document: {
+          assignee: true as never,
+        },
+      },
+    });
   }
 
   async getLatestFirmware() {

@@ -58,7 +58,7 @@ export class Users {
   @Column({ nullable: true, default: null })
   fileId: string;
 
-  @Column({ type: 'text', nullable: true, default: null, select: false })
+  @Column({ type: 'text', nullable: true, default: null })
   reset_token: string;
 
   @Column({ type: 'enum', enum: UserRoles, default: 'SU' })

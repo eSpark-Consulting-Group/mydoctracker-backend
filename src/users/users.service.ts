@@ -159,23 +159,8 @@ export class UsersService {
         throw new UnauthorizedException(`Your account has been deactivated!`);
       }
       const isPassCorrect = payload.oldPasswordHash === user.hashedPassword;
-      if (!isPassCorrect) {
+      if (!isPassCorrect || user.reset_token !== token) {
         throw new ForbiddenException('Request is malformed, Please try again!');
-      }
-      const iat = payload.iat;
-      const exp = payload.exp;
-      const tokenData = {
-        ip: payload.ip,
-        generated_at: new Date(iat * 1000),
-        expires_at: new Date(exp * 1000),
-        password_updated_at: new Date(),
-        device: payload.device,
-        oldPasswordHash: payload.oldPasswordHash,
-      };
-      if (user.meta) {
-        user.meta.reset_history.push(tokenData);
-      } else {
-        user.meta = { reset_history: [tokenData] };
       }
     } else if (oldPassword) {
       user = await this.userRepositry.findOne({
@@ -201,11 +186,14 @@ export class UsersService {
     await this.userRepositry.save(user);
   }
 
-  async forgotPassword(email: string, ip: string, device: any, host: string) {
-    const deviceInfo = `${device.type}, ${device.parser.useragent.os.family}, ${device.parser.useragent.family}`;
-    const user = await this.userRepositry.findOne({
-      where: { email },
-    });
+  async forgotPassword(email: string, host: string) {
+    const user = await this.userRepositry
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .andWhere('user.role IN (:...roles)', {
+        roles: [UserRoles.SU, UserRoles.CU],
+      })
+      .getOne();
     if (!user) {
       throw new NotFoundException('User not Found!');
     }
@@ -213,13 +201,9 @@ export class UsersService {
       throw new UnauthorizedException(`Your account has been deactivated!`);
     }
 
-    const date = Date.now();
     const payload = {
-      ip: ip,
       email: user.email,
-      date: date,
       oldPasswordHash: user.hashedPassword,
-      device: deviceInfo,
     };
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: 30 * 60,
