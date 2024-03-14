@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UploadedFile } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Reports } from 'src/entities/Report.entity';
 import { Repository } from 'typeorm';
@@ -26,9 +26,6 @@ export class ReportService {
         user,
         S3_ENUMS.reports,
       );
-
-      console.log(uploadFile);
-
       const problemPicture = this.reportRepositry.create({
         email: reportData.email,
         description: reportData.description,
@@ -37,7 +34,5 @@ export class ReportService {
       });
       await this.reportRepositry.save(problemPicture);
     }
-
-    throw new NotFoundException(`Image not found!`);
   }
 }

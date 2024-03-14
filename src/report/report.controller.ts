@@ -7,7 +7,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ReportProblemDTO } from './dto/report-dto';
 import { ReportService } from './report.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -16,6 +21,7 @@ import { CurrentUser } from 'src/utils/decorators/current-user';
 import { Users } from 'src/entities/User.entity';
 import { JwtGuard } from 'src/auth/guard/jwt-auth.guard';
 
+@ApiTags('Report')
 @Controller('report')
 export class ReportController {
   constructor(private reportService: ReportService) {}

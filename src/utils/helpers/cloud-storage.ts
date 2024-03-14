@@ -48,11 +48,11 @@ export class CloudStorageService {
     });
 
     const reportUuid = uuidv4();
-
+    const fileExtension = extname(file.originalname);
     const response = await this.b2.uploadFile({
       uploadUrl: data.data.uploadUrl,
       uploadAuthToken: data.data.authorizationToken,
-      fileName: `${folderName}/${user.id}/${reportUuid}.jpg`,
+      fileName: `${folderName}/${user.id}/${reportUuid}.${fileExtension}`,
       data: file.buffer,
     });
     if (response) {
