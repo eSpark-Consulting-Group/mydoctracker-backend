@@ -11,6 +11,6 @@ import { EmailService } from 'src/utils/helpers/email';
   imports: [ConfigModule, TypeOrmModule.forFeature([Users])],
   controllers: [UsersController],
   providers: [UsersService, CloudStorageService, EmailService],
-  exports: [UsersService],
+  exports: [UsersService, CloudStorageService],
 })
-export class UsersModule { }
+export class UsersModule {}
