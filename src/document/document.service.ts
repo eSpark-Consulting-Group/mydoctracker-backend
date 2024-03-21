@@ -95,7 +95,7 @@ export class DocumentService {
         newDocument.assignee = employee.id;
       } else if (user.role !== UserRoles.SU) {
         throw new ForbiddenException(
-          "You're not allowd to add document for yourself",
+          "You're not allowed to add document for yourself",
         );
       }
       if (documentData.fields) {
@@ -231,6 +231,7 @@ export class DocumentService {
         'as.firstName',
         'as.lastName',
         'as.username',
+        'as.profilePicture',
         'as.role',
         'as.id',
         'as.contact',
